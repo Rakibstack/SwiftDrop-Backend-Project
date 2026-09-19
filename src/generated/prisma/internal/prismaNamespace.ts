@@ -397,6 +397,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  RiderProfile: 'RiderProfile',
+  MerchantProfile: 'MerchantProfile',
   User: 'User'
 } as const
 
@@ -413,10 +415,158 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user"
+    modelProps: "riderProfile" | "merchantProfile" | "user"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    RiderProfile: {
+      payload: Prisma.$RiderProfilePayload<ExtArgs>
+      fields: Prisma.RiderProfileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RiderProfileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RiderProfileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>
+        }
+        findFirst: {
+          args: Prisma.RiderProfileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RiderProfileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>
+        }
+        findMany: {
+          args: Prisma.RiderProfileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>[]
+        }
+        create: {
+          args: Prisma.RiderProfileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>
+        }
+        createMany: {
+          args: Prisma.RiderProfileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RiderProfileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>[]
+        }
+        delete: {
+          args: Prisma.RiderProfileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>
+        }
+        update: {
+          args: Prisma.RiderProfileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>
+        }
+        deleteMany: {
+          args: Prisma.RiderProfileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RiderProfileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RiderProfileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>[]
+        }
+        upsert: {
+          args: Prisma.RiderProfileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RiderProfilePayload>
+        }
+        aggregate: {
+          args: Prisma.RiderProfileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRiderProfile>
+        }
+        groupBy: {
+          args: Prisma.RiderProfileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RiderProfileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RiderProfileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RiderProfileCountAggregateOutputType> | number
+        }
+      }
+    }
+    MerchantProfile: {
+      payload: Prisma.$MerchantProfilePayload<ExtArgs>
+      fields: Prisma.MerchantProfileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MerchantProfileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MerchantProfileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>
+        }
+        findFirst: {
+          args: Prisma.MerchantProfileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MerchantProfileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>
+        }
+        findMany: {
+          args: Prisma.MerchantProfileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>[]
+        }
+        create: {
+          args: Prisma.MerchantProfileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>
+        }
+        createMany: {
+          args: Prisma.MerchantProfileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MerchantProfileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>[]
+        }
+        delete: {
+          args: Prisma.MerchantProfileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>
+        }
+        update: {
+          args: Prisma.MerchantProfileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>
+        }
+        deleteMany: {
+          args: Prisma.MerchantProfileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MerchantProfileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MerchantProfileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>[]
+        }
+        upsert: {
+          args: Prisma.MerchantProfileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchantProfilePayload>
+        }
+        aggregate: {
+          args: Prisma.MerchantProfileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMerchantProfile>
+        }
+        groupBy: {
+          args: Prisma.MerchantProfileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MerchantProfileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MerchantProfileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MerchantProfileCountAggregateOutputType> | number
+        }
+      }
+    }
     User: {
       payload: Prisma.$UserPayload<ExtArgs>
       fields: Prisma.UserFieldRefs
@@ -530,15 +680,49 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const RiderProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  phone: 'phone',
+  address: 'address',
+  vehicleType: 'vehicleType',
+  licenseNumber: 'licenseNumber',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
+
+
+export const MerchantProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  businessName: 'businessName',
+  businessPhone: 'businessPhone',
+  businessAddress: 'businessAddress',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MerchantProfileScalarFieldEnum = (typeof MerchantProfileScalarFieldEnum)[keyof typeof MerchantProfileScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   password: 'password',
-  address: 'address',
-  bio: 'bio',
-  phoneNumber: 'phoneNumber',
-  profileImage: 'profileImage',
+  googleId: 'googleId',
+  role: 'role',
+  status: 'status',
+  emailVerified: 'emailVerified',
+  authProvider: 'authProvider',
+  imageUrl: 'imageUrl',
+  imagePublicId: 'imagePublicId',
+  needPasswordChange: 'needPasswordChange',
+  isDeleted: 'isDeleted',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -591,6 +775,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'RiderStatus'
+ */
+export type EnumRiderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RiderStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RiderStatus[]'
+ */
+export type ListEnumRiderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RiderStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -601,6 +799,55 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'UserRole'
+ */
+export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
+    
+
+
+/**
+ * Reference to a field of type 'UserRole[]'
+ */
+export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'UserStatus'
+ */
+export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'UserStatus[]'
+ */
+export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'AuthProvider'
+ */
+export type EnumAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'AuthProvider[]'
+ */
+export type ListEnumAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthProvider[]'>
     
 
 
@@ -768,6 +1015,8 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
+  riderProfile?: Prisma.RiderProfileOmit
+  merchantProfile?: Prisma.MerchantProfileOmit
   user?: Prisma.UserOmit
 }
 

@@ -1,0 +1,20 @@
+
+enum UserRole {
+  MERCHANT
+  RIDER
+  ADMIN
+}
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum RiderStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+enum AuthProvider {
+  GOOGLE
+  CREDENTIAL
+}

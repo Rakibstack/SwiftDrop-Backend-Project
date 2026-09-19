@@ -51,6 +51,8 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  RiderProfile: 'RiderProfile',
+  MerchantProfile: 'MerchantProfile',
   User: 'User'
 } as const
 
@@ -70,15 +72,49 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const RiderProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  phone: 'phone',
+  address: 'address',
+  vehicleType: 'vehicleType',
+  licenseNumber: 'licenseNumber',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
+
+
+export const MerchantProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  businessName: 'businessName',
+  businessPhone: 'businessPhone',
+  businessAddress: 'businessAddress',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MerchantProfileScalarFieldEnum = (typeof MerchantProfileScalarFieldEnum)[keyof typeof MerchantProfileScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   password: 'password',
-  address: 'address',
-  bio: 'bio',
-  phoneNumber: 'phoneNumber',
-  profileImage: 'profileImage',
+  googleId: 'googleId',
+  role: 'role',
+  status: 'status',
+  emailVerified: 'emailVerified',
+  authProvider: 'authProvider',
+  imageUrl: 'imageUrl',
+  imagePublicId: 'imagePublicId',
+  needPasswordChange: 'needPasswordChange',
+  isDeleted: 'isDeleted',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
