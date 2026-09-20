@@ -26,30 +26,30 @@ export type AggregateMerchantProfile = {
 
 export type MerchantProfileMinAggregateOutputType = {
   id: string | null
-  userId: string | null
   businessName: string | null
   businessPhone: string | null
   businessAddress: string | null
+  userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type MerchantProfileMaxAggregateOutputType = {
   id: string | null
-  userId: string | null
   businessName: string | null
   businessPhone: string | null
   businessAddress: string | null
+  userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type MerchantProfileCountAggregateOutputType = {
   id: number
-  userId: number
   businessName: number
   businessPhone: number
   businessAddress: number
+  userId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -58,30 +58,30 @@ export type MerchantProfileCountAggregateOutputType = {
 
 export type MerchantProfileMinAggregateInputType = {
   id?: true
-  userId?: true
   businessName?: true
   businessPhone?: true
   businessAddress?: true
+  userId?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type MerchantProfileMaxAggregateInputType = {
   id?: true
-  userId?: true
   businessName?: true
   businessPhone?: true
   businessAddress?: true
+  userId?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type MerchantProfileCountAggregateInputType = {
   id?: true
-  userId?: true
   businessName?: true
   businessPhone?: true
   businessAddress?: true
+  userId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -161,10 +161,10 @@ export type MerchantProfileGroupByArgs<ExtArgs extends runtime.Types.Extensions.
 
 export type MerchantProfileGroupByOutputType = {
   id: string
-  userId: string
   businessName: string
   businessPhone: string
   businessAddress: string
+  userId: string
   createdAt: Date
   updatedAt: Date
   _count: MerchantProfileCountAggregateOutputType | null
@@ -192,10 +192,10 @@ export type MerchantProfileWhereInput = {
   OR?: Prisma.MerchantProfileWhereInput[]
   NOT?: Prisma.MerchantProfileWhereInput | Prisma.MerchantProfileWhereInput[]
   id?: Prisma.StringFilter<"MerchantProfile"> | string
-  userId?: Prisma.StringFilter<"MerchantProfile"> | string
   businessName?: Prisma.StringFilter<"MerchantProfile"> | string
   businessPhone?: Prisma.StringFilter<"MerchantProfile"> | string
   businessAddress?: Prisma.StringFilter<"MerchantProfile"> | string
+  userId?: Prisma.StringFilter<"MerchantProfile"> | string
   createdAt?: Prisma.DateTimeFilter<"MerchantProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MerchantProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -203,10 +203,10 @@ export type MerchantProfileWhereInput = {
 
 export type MerchantProfileOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   businessPhone?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -228,10 +228,10 @@ export type MerchantProfileWhereUniqueInput = Prisma.AtLeast<{
 
 export type MerchantProfileOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   businessPhone?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MerchantProfileCountOrderByAggregateInput
@@ -244,10 +244,10 @@ export type MerchantProfileScalarWhereWithAggregatesInput = {
   OR?: Prisma.MerchantProfileScalarWhereWithAggregatesInput[]
   NOT?: Prisma.MerchantProfileScalarWhereWithAggregatesInput | Prisma.MerchantProfileScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"MerchantProfile"> | string
-  userId?: Prisma.StringWithAggregatesFilter<"MerchantProfile"> | string
   businessName?: Prisma.StringWithAggregatesFilter<"MerchantProfile"> | string
   businessPhone?: Prisma.StringWithAggregatesFilter<"MerchantProfile"> | string
   businessAddress?: Prisma.StringWithAggregatesFilter<"MerchantProfile"> | string
+  userId?: Prisma.StringWithAggregatesFilter<"MerchantProfile"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MerchantProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MerchantProfile"> | Date | string
 }
@@ -264,10 +264,10 @@ export type MerchantProfileCreateInput = {
 
 export type MerchantProfileUncheckedCreateInput = {
   id?: string
-  userId: string
   businessName: string
   businessPhone: string
   businessAddress: string
+  userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -284,20 +284,20 @@ export type MerchantProfileUpdateInput = {
 
 export type MerchantProfileUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   businessPhone?: Prisma.StringFieldUpdateOperationsInput | string
   businessAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MerchantProfileCreateManyInput = {
   id?: string
-  userId: string
   businessName: string
   businessPhone: string
   businessAddress: string
+  userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -313,40 +313,40 @@ export type MerchantProfileUpdateManyMutationInput = {
 
 export type MerchantProfileUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   businessPhone?: Prisma.StringFieldUpdateOperationsInput | string
   businessAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MerchantProfileCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   businessPhone?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type MerchantProfileMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   businessPhone?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type MerchantProfileMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   businessPhone?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -444,10 +444,10 @@ export type MerchantProfileUncheckedUpdateWithoutUserInput = {
 
 export type MerchantProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  userId?: boolean
   businessName?: boolean
   businessPhone?: boolean
   businessAddress?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -455,10 +455,10 @@ export type MerchantProfileSelect<ExtArgs extends runtime.Types.Extensions.Inter
 
 export type MerchantProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  userId?: boolean
   businessName?: boolean
   businessPhone?: boolean
   businessAddress?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -466,10 +466,10 @@ export type MerchantProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
 
 export type MerchantProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  userId?: boolean
   businessName?: boolean
   businessPhone?: boolean
   businessAddress?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -477,15 +477,15 @@ export type MerchantProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
 
 export type MerchantProfileSelectScalar = {
   id?: boolean
-  userId?: boolean
   businessName?: boolean
   businessPhone?: boolean
   businessAddress?: boolean
+  userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MerchantProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "businessName" | "businessPhone" | "businessAddress" | "createdAt" | "updatedAt", ExtArgs["result"]["merchantProfile"]>
+export type MerchantProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "businessName" | "businessPhone" | "businessAddress" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["merchantProfile"]>
 export type MerchantProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -503,10 +503,10 @@ export type $MerchantProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    userId: string
     businessName: string
     businessPhone: string
     businessAddress: string
+    userId: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["merchantProfile"]>
@@ -934,10 +934,10 @@ export interface Prisma__MerchantProfileClient<T, Null = never, ExtArgs extends 
  */
 export interface MerchantProfileFieldRefs {
   readonly id: Prisma.FieldRef<"MerchantProfile", 'String'>
-  readonly userId: Prisma.FieldRef<"MerchantProfile", 'String'>
   readonly businessName: Prisma.FieldRef<"MerchantProfile", 'String'>
   readonly businessPhone: Prisma.FieldRef<"MerchantProfile", 'String'>
   readonly businessAddress: Prisma.FieldRef<"MerchantProfile", 'String'>
+  readonly userId: Prisma.FieldRef<"MerchantProfile", 'String'>
   readonly createdAt: Prisma.FieldRef<"MerchantProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MerchantProfile", 'DateTime'>
 }

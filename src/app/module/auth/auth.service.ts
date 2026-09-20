@@ -12,11 +12,13 @@ import path from "path";
 import transporter from "../../lib/nodemailer";
 import ejs from "ejs";
 import {
+  ILoginUserPayload,
   IMerchantRegisterPayload,
   IVerifyEmailPayload,
 } from "./auth.validation";
 import { jwtUtils } from "../../utils/jwt";
 import { SignOptions } from "jsonwebtoken";
+import { UserStatus } from "../../../generated/prisma/enums";
 
 const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const {
@@ -179,8 +181,62 @@ const verifyMerchantEmail = async (payload: IVerifyEmailPayload) => {
     refreshToken,
   };
 };
+const loginUser = async (payload:ILoginUserPayload) => {
+
+
+  const user = await prisma.user.findUnique({
+    where: { email : payload.email },
+  });
+
+  if (!user) {
+    throw new AppError(httpstatus.NOT_FOUND, "User not found");
+  }
+
+  if (user.status === UserStatus.SUSPENDED) {
+    throw new AppError(httpstatus.FORBIDDEN, "User is suspensed");
+  }
+
+  if (user.isDeleted || user.status === UserStatus.DELETED) {
+    throw new AppError(httpstatus.BAD_REQUEST, "User is deleted");
+  }
+
+  const isPasswordMatched = await bcrypt.compare(
+   payload.password,
+    user.password as string,
+  );
+
+  if (!isPasswordMatched) {
+    throw new AppError(httpstatus.UNAUTHORIZED, "Invalid credentials");
+  }
+
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
+  );
+
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
 
 export const AuthService = {
   registerMerchant,
   verifyMerchantEmail,
+  loginUser
 };

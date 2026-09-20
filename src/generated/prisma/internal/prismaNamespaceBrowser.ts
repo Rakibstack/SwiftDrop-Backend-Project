@@ -89,10 +89,10 @@ export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[k
 
 export const MerchantProfileScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
   businessName: 'businessName',
   businessPhone: 'businessPhone',
   businessAddress: 'businessAddress',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

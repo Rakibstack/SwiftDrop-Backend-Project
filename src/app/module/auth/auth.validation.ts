@@ -58,3 +58,24 @@ export const verifyEmailSchema = z.object({
 });
 
 export type IVerifyEmailPayload = z.infer<typeof verifyEmailSchema>;
+
+export const merchantLoginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please provide a valid email address"),
+
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(50, "Password cannot exceed 100 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(
+      /[^A-Za-z0-9]/,
+      "Password must contain at least one special character",
+    ),
+});
+
+export type ILoginUserPayload = z.infer<typeof merchantLoginSchema>;
