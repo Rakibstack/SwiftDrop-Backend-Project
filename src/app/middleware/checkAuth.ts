@@ -1,4 +1,3 @@
-
 import type { NextFunction, Request, Response } from "express";
 import type { JwtPayload } from "jsonwebtoken";
 import config from "../config";
@@ -23,7 +22,6 @@ declare global {
   }
 }
 
-
 export const auth = (...requiredRoles: UserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.accessToken
@@ -33,7 +31,10 @@ export const auth = (...requiredRoles: UserRole[]) => {
         : req.headers.authorization;
 
     if (!token) {
-throw new AppError(httpstatus.UNAUTHORIZED, "You are not logged in. Please log in to access this resource.");
+      throw new AppError(
+        httpstatus.UNAUTHORIZED,
+        "You are not logged in. Please log in to access this resource.",
+      );
     }
 
     const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
@@ -45,7 +46,10 @@ throw new AppError(httpstatus.UNAUTHORIZED, "You are not logged in. Please log i
     const { email, name, userId, role } = verifiedToken.data as JwtPayload;
 
     if (requiredRoles.length && !requiredRoles.includes(role)) {
-throw new AppError(httpstatus.FORBIDDEN, "Forbidden. You don't have permission to access this resource.");
+      throw new AppError(
+        httpstatus.FORBIDDEN,
+        "Forbidden. You don't have permission to access this resource.",
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -57,11 +61,17 @@ throw new AppError(httpstatus.FORBIDDEN, "Forbidden. You don't have permission t
     });
 
     if (!user) {
-      throw new AppError(httpstatus.UNAUTHORIZED, "User not found. Please log in again.");
+      throw new AppError(
+        httpstatus.UNAUTHORIZED,
+        "User not found. Please log in again.",
+      );
     }
 
     if (user.status === "SUSPENDED") {
-      throw new AppError(httpstatus.FORBIDDEN, "Your account has been blocked. Please contact support.");
+      throw new AppError(
+        httpstatus.FORBIDDEN,
+        "Your account has been suspended. Please contact support.",
+      );
     }
 
     req.user = {
