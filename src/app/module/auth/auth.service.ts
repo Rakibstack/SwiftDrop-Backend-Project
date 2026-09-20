@@ -12,13 +12,16 @@ import path from "path";
 import transporter from "../../lib/nodemailer";
 import ejs from "ejs";
 import {
+  IForgotPasswordPayload,
   ILoginUserPayload,
   IMerchantRegisterPayload,
+  IResetPasswordPayload,
   IVerifyEmailPayload,
 } from "./auth.validation";
 import { jwtUtils } from "../../utils/jwt";
-import { SignOptions } from "jsonwebtoken";
+import { JwtPayload, SignOptions } from "jsonwebtoken";
 import { UserStatus } from "../../../generated/prisma/enums";
+import { requestUser } from "../../middleware/checkAuth";
 
 const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const {
@@ -181,11 +184,9 @@ const verifyMerchantEmail = async (payload: IVerifyEmailPayload) => {
     refreshToken,
   };
 };
-const loginUser = async (payload:ILoginUserPayload) => {
-
-
+const loginUser = async (payload: ILoginUserPayload) => {
   const user = await prisma.user.findUnique({
-    where: { email : payload.email },
+    where: { email: payload.email },
   });
 
   if (!user) {
@@ -201,7 +202,7 @@ const loginUser = async (payload:ILoginUserPayload) => {
   }
 
   const isPasswordMatched = await bcrypt.compare(
-   payload.password,
+    payload.password,
     user.password as string,
   );
 
@@ -233,10 +234,201 @@ const loginUser = async (payload:ILoginUserPayload) => {
     refreshToken,
   };
 };
+const getMe = async (user: requestUser) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+    omit: {
+      password: true,
+    },
+  });
 
+  if (!isUserExists) {
+    throw new AppError(httpstatus.NOT_FOUND, "User not found");
+  }
+
+  return isUserExists;
+};
+
+const refreshToken = async (token: string) => {
+  const verifiedRefreshToken = jwtUtils.verifyToken(
+    token,
+    config.jwt_refresh_secret,
+  );
+
+  if (!verifiedRefreshToken.success || !verifiedRefreshToken.data) {
+    throw new AppError(httpstatus.UNAUTHORIZED, "Invalid refresh token");
+  }
+
+  const data = verifiedRefreshToken.data as JwtPayload;
+
+  const user = await prisma.user.findUnique({
+    where: { id: data.userId },
+  });
+
+  if (!user || user.isDeleted || user.status !== UserStatus.ACTIVE) {
+    throw new AppError(
+      httpstatus.UNAUTHORIZED,
+      "User is inactive or not found",
+    );
+  }
+
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
+  );
+
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+const forgotPassword = async (payload: IForgotPasswordPayload) => {
+  const { email } = payload;
+
+  const isForgotUserExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!isForgotUserExist) {
+    throw new AppError(httpstatus.NOT_FOUND, "User does not exists");
+  }
+  if (!isForgotUserExist.emailVerified) {
+    throw new AppError(httpstatus.FORBIDDEN, "User Is Not Varified");
+  }
+
+  if (isForgotUserExist.status === "SUSPENDED") {
+    throw new AppError(httpstatus.FORBIDDEN, "User is Suspended");
+  }
+  if (isForgotUserExist.isDeleted || isForgotUserExist.status === "DELETED") {
+    throw new AppError(httpstatus.NOT_FOUND, "User Is Deleted");
+  }
+  if (
+    isForgotUserExist.googleId &&
+    isForgotUserExist.authProvider === "GOOGLE"
+  ) {
+    throw new AppError(httpstatus.BAD_REQUEST, "User Has Account With Google");
+  }
+
+  const expiresInSecend = 5 * 60;
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  const key = `forgot-password-otp:${isForgotUserExist.email}`;
+
+  await redisClient.set(key, otp, {
+    expiration: {
+      type: "EX",
+      value: expiresInSecend,
+    },
+  });
+
+  const templatePath = path.join(
+    process.cwd(),
+    "src/app/template/SwiftDrop-ForgotPasswordEmail.ejs",
+  );
+
+  const html = await ejs.renderFile(templatePath, {
+    name: isForgotUserExist.name,
+    otpValue: otp,
+    expiresIn: expiresInSecend / 60,
+  });
+
+  await transporter.sendMail({
+    from: config.sender_email,
+    to: isForgotUserExist.email,
+    subject: "Reset Your SwiftDrop Password",
+    html,
+  });
+};
+const resetPassword = async (payload: IResetPasswordPayload) => {
+  const { otp, newPassword, email } = payload;
+
+  const isResetUserExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!isResetUserExist) {
+    throw new AppError(httpstatus.NOT_FOUND, "User does not exists");
+  }
+  if (!isResetUserExist.emailVerified) {
+    throw new AppError(httpstatus.FORBIDDEN, "User Is Not Varified");
+  }
+
+  if (isResetUserExist.status === "SUSPENDED") {
+    throw new AppError(httpstatus.FORBIDDEN, "User is Suspended");
+  }
+  if (isResetUserExist.isDeleted || isResetUserExist.status === "DELETED") {
+    throw new AppError(httpstatus.NOT_FOUND, "User Is Deleted");
+  }
+  if (isResetUserExist.googleId && isResetUserExist.authProvider === "GOOGLE") {
+    throw new AppError(httpstatus.BAD_REQUEST, "User Has Account With Google");
+  }
+  const key = `forgot-password-otp:${isResetUserExist.email}`;
+
+  const redisOtp = await redisClient.get(key);
+  if (!redisOtp) {
+    throw new AppError(httpstatus.BAD_REQUEST, "Invalid Otp");
+  }
+  if (redisOtp !== otp) {
+    throw new AppError(httpstatus.BAD_REQUEST, "Otp does not match");
+  }
+  await redisClient.del(key);
+
+  const hashPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  await prisma.user.update({
+    where: {
+      email: isResetUserExist.email,
+    },
+    data: {
+      password: hashPassword,
+    },
+  });
+
+  const templatePath = path.join(
+    process.cwd(),
+    "src/app/template/SwiftDrop-PasswordResetSuccess.ejs",
+  );
+
+  const html = await ejs.renderFile(templatePath, {
+    name: isResetUserExist.name,
+  });
+
+  await transporter.sendMail({
+    from: config.sender_email,
+    to: isResetUserExist.email,
+    subject: "Your SwiftDrop Password Was Reset",
+    html,
+  });
+};
 
 export const AuthService = {
   registerMerchant,
   verifyMerchantEmail,
-  loginUser
+  loginUser,getMe,
+  refreshToken,
+  forgotPassword,
+  resetPassword
 };
