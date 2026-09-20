@@ -1,10 +1,10 @@
 model MerchantProfile {
     id              String @id @default(uuid())
-    userId          String @unique
     businessName    String
     businessPhone   String
     businessAddress String
 
+    userId          String @unique
     user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     createdAt DateTime @default(now())
