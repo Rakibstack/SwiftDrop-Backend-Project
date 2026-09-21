@@ -311,7 +311,46 @@ if (query.status) {
     },
   };
 };
+const getSingleRider = async (riderId: string) => {
+  const singleRider = await prisma.riderProfile.findUnique({
+    where: {
+      id: riderId,
+    },
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
 
+  if (!singleRider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Single Rider Not Found");
+  }
+
+  return singleRider
+};
+
+const updateRiderProfile = async (
+  payload: IUpdateRiderProfilePayload,
+  user: requestUser,
+) => {
+  const existingRider = await prisma.riderProfile.findUnique({
+    where: { userId: user.userId },
+  });
+
+  if (!existingRider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  const updatedRider = await prisma.riderProfile.update({
+    where: { id: existingRider.id },
+    data: payload,
+  });
+
+  return updatedRider;
+};
 
 export const riderService = {
   applyAsRider,
