@@ -7,8 +7,11 @@ import { UploadApiResponse } from "cloudinary";
 import { IUpdateMerchantProfilePayload } from "./user.validation";
 import { requestUser } from "../../middleware/checkAuth";
 import AppError from "../../utils/AppError";
-import httpstatus from "http-status"
+import httpstatus from "http-status";
+import { IQuery } from "../../interface";
+import { UserWhereInput } from "../../../generated/prisma/models";
 
+// user only api
 const updateUserProfile = async (buffer: Buffer, userId: string) => {
   const currentUser = await prisma.user.findUnique({
     where: {
@@ -79,8 +82,75 @@ const updateMerchantProfile = async (
 
   return updatedMerchant;
 };
+// admin only api
+const getAllUsers = async (query: IQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+
+  const addConditions: UserWhereInput[] = [];
+
+  //searcing
+  if (query.searchTerm) {
+    addConditions.push({
+      OR: [
+        {
+          name: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          email: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  addConditions.push({
+    isDeleted: false,
+  });
+
+  const totalUsers = await prisma.user.count({
+    where: {
+      AND: addConditions,
+    },
+  });
+  const allusers = await prisma.user.findMany({
+    where: {
+      AND: addConditions,
+    },
+    take: limit,
+    skip: skip,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      merchantProfile: true,
+      riderProfile : true,
+    },
+    omit: {
+      password: true,
+    },
+  });
+  return {
+    data: allusers,
+    meta: {
+      page: page,
+      limit: limit,
+      total: totalUsers,
+      totalPages: Math.ceil(totalUsers / limit),
+    },
+  };
+};
 
 export const userService = {
   updateUserProfile,
-  updateMerchantProfile
+  updateMerchantProfile,
+  getAllUsers,
+  deleteUser,
+  getSingleUser
 };

@@ -35,8 +35,40 @@ const updateMerchantProfile = catchAsync(
     });
   },
 );
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const result = await userService.getAllUsers(req.query);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatus.OK,
+    message: "Retrieve All Users Successfully",
+    data: result,
+  });
+});
+const getSingleUser = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.userId as string
+  const result = await userService.getSingleUser(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatus.OK,
+    message: "Retrieve Single User Successfully",
+    data: result,
+  });
+});
+const deleteUser = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.userId as string
+  const result = await userService.deleteUser(userId);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatus.OK,
+    message: "Deleted  User Successfully",
+    data: result,
+  });
+});
 
 export const userController = {
   updateUserProfile,
-  updateMerchantProfile
+  updateMerchantProfile,
+  getAllUsers,
+  getSingleUser,
+  deleteUser
 };

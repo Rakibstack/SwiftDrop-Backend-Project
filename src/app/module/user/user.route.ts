@@ -22,6 +22,21 @@ router.patch(
   auth(UserRole.MERCHANT),
   userController.updateMerchantProfile,
 );
+router.get(
+  "/get-all-users",
+  auth(UserRole.ADMIN),
+  userController.getAllUsers,
+);
+router.get(
+  "/get-single-user/:userId",
+  auth(UserRole.ADMIN),
+  userController.getSingleUser,
+);
+router.patch(
+  "/delete-user/:userId",
+  auth(UserRole.ADMIN),
+  userController.deleteUser,
+);
 
 
 export const UserRoutes = router;

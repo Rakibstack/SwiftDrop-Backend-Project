@@ -73,6 +73,12 @@ export const auth = (...requiredRoles: UserRole[]) => {
         "Your account has been suspended. Please contact support.",
       );
     }
+    if (user.isDeleted) {
+      throw new AppError(
+        httpstatus.FORBIDDEN,
+        "Your account has been Deleted. Please contact support.",
+      );
+    }
 
     req.user = {
       email,
