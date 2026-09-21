@@ -594,10 +594,6 @@ export type UserUpdateOneRequiredWithoutMerchantProfileNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMerchantProfileInput, Prisma.UserUpdateWithoutMerchantProfileInput>, Prisma.UserUncheckedUpdateWithoutMerchantProfileInput>
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole
 }
@@ -612,10 +608,6 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type EnumAuthProviderFieldUpdateOperationsInput = {
   set?: $Enums.AuthProvider
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
 }
 
 export type UserCreateWithoutRiderProfileInput = {

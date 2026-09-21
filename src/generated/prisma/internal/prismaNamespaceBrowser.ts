@@ -74,12 +74,15 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const RiderProfileScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
   phone: 'phone',
   address: 'address',
   vehicleType: 'vehicleType',
   licenseNumber: 'licenseNumber',
   status: 'status',
+  userId: 'userId',
+  approvedAt: 'approvedAt',
+  rejectedAt: 'rejectedAt',
+  rejectionReason: 'rejectionReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

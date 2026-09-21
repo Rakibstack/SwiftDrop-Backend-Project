@@ -12,10 +12,15 @@ enum UserStatus {
 
 enum RiderStatus {
   PENDING
+  REJECTED
   ACTIVE
   SUSPENDED
 }
 enum AuthProvider {
   GOOGLE
   CREDENTIAL
+}
+enum VehicleType {
+  BIKE
+  MOTORCYCLE
 }

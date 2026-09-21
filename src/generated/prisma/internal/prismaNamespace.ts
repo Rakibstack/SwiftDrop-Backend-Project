@@ -682,12 +682,15 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const RiderProfileScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
   phone: 'phone',
   address: 'address',
   vehicleType: 'vehicleType',
   licenseNumber: 'licenseNumber',
   status: 'status',
+  userId: 'userId',
+  approvedAt: 'approvedAt',
+  rejectedAt: 'rejectedAt',
+  rejectionReason: 'rejectionReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -771,6 +774,20 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'VehicleType'
+ */
+export type EnumVehicleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VehicleType'>
+    
+
+
+/**
+ * Reference to a field of type 'VehicleType[]'
+ */
+export type ListEnumVehicleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VehicleType[]'>
     
 
 

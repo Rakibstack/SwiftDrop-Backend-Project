@@ -1,14 +1,18 @@
-
 model RiderProfile {
   id            String      @id @default(uuid())
-  userId        String      @unique
   phone         String
   address       String
-  vehicleType   String
-  licenseNumber String
-  status        RiderStatus @default(PENDING)
+  vehicleType   VehicleType
+  licenseNumber String      @unique
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade,onUpdate: Cascade)
+  status RiderStatus @default(PENDING)
+
+  userId   String  @unique
+  user     User   @relation(fields: [userId],references: [id],onDelete: Cascade,onUpdate: Cascade)
+
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

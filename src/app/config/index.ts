@@ -18,6 +18,10 @@ export default {
   jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN!,
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN!,
 
+  tester_admin_name: process.env.TESTER_ADMIN_NAME!,
+  tester_admin_email: process.env.TESTER_ADMIN_EMAIL!,
+  tester_admin_password: process.env.TESTER_ADMIN_PASSWORD!,
+
   redis_username: process.env.REDIS_USERNAME!,
   redis_password: process.env.REDIS_PASSWORD!,
   redis_host: process.env.REDIS_HOST!,
@@ -27,11 +31,9 @@ export default {
   sender_email: process.env.SENDER_EMAIL!,
   smtp_password: process.env.SMTP_PASSWORD!,
 
-  
-	cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-	cloudinary_api_key: process.env.CLOUDINARY_API_KEY!,
-	cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET!,
+  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  cloudinary_api_key: process.env.CLOUDINARY_API_KEY!,
+  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET!,
 
-  google_client_id:process.env.GOOGLE_CLIENT_ID!
-	
+  google_client_id: process.env.GOOGLE_CLIENT_ID!,
 };

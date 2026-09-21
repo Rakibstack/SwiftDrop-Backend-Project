@@ -29,6 +29,7 @@ export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
 export const RiderStatus = {
   PENDING: 'PENDING',
+  REJECTED: 'REJECTED',
   ACTIVE: 'ACTIVE',
   SUSPENDED: 'SUSPENDED'
 } as const
@@ -42,3 +43,11 @@ export const AuthProvider = {
 } as const
 
 export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
+
+
+export const VehicleType = {
+  BIKE: 'BIKE',
+  MOTORCYCLE: 'MOTORCYCLE'
+} as const
+
+export type VehicleType = (typeof VehicleType)[keyof typeof VehicleType]

@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Verify Your SwiftDrop Rider Account</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7fb;
+        font-family:
+          Arial,
+          Helvetica,
+          sans-serif;
+        color: #1f2937;
+      }
+
+      .wrapper {
+        width: 100%;
+        padding: 40px 15px;
+        box-sizing: border-box;
+      }
+
+      .container {
+        max-width: 560px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+      }
+
+      .header {
+        padding: 28px 35px;
+        background-color: #111827;
+        text-align: center;
+      }
+
+      .brand {
+        margin: 0;
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .content {
+        padding: 38px 35px;
+      }
+
+      .title {
+        margin: 0 0 18px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .text {
+        margin: 0 0 18px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+      }
+
+      .otp-wrapper {
+        margin: 30px 0;
+        padding: 22px;
+        background-color: #f3f4f6;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .otp-label {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .otp {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 8px;
+        color: #111827;
+      }
+
+      .expiry {
+        margin-top: 12px;
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      .security {
+        margin-top: 25px;
+        padding: 16px;
+        background-color: #fff7ed;
+        border-left: 4px solid #f97316;
+        border-radius: 6px;
+      }
+
+      .security p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #7c2d12;
+      }
+
+      .footer {
+        padding: 22px 35px;
+        background-color: #f9fafb;
+        text-align: center;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .footer p {
+        margin: 4px 0;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .wrapper {
+          padding: 20px 10px;
+        }
+
+        .content {
+          padding: 30px 22px;
+        }
+
+        .header {
+          padding: 24px 20px;
+        }
+
+        .footer {
+          padding: 20px;
+        }
+
+        .otp {
+          font-size: 28px;
+          letter-spacing: 6px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <div class="container">
+
+        <div class="header">
+          <h1 class="brand">SwiftDrop</h1>
+        </div>
+
+        <div class="content">
+          <h2 class="title">
+            Verify Your Rider Account
+          </h2>
+
+          <p class="text">
+            Hello <%= name %>,
+          </p>
+
+          <p class="text">
+            Thank you for applying to become a SwiftDrop rider.
+            Please use the verification code below to verify your email
+            address and continue with your rider application.
+          </p>
+
+          <div class="otp-wrapper">
+            <p class="otp-label">Verification Code</p>
+
+            <p class="otp">
+              <%= otpValue %>
+            </p>
+
+            <p class="expiry">
+              This code will expire in <%= expiresIn %> minutes.
+            </p>
+          </div>
+
+          <div class="security">
+            <p>
+              For your security, never share this verification code
+              with anyone. SwiftDrop will never ask you for your OTP
+              through phone calls or messages.
+            </p>
+          </div>
+
+          <p class="text" style="margin-top: 25px;">
+            If you did not submit a rider application on SwiftDrop,
+            you can safely ignore this email.
+          </p>
+
+          <p class="text">
+            Best regards,<br />
+            <strong>SwiftDrop Team</strong>
+          </p>
+        </div>
+
+        <div class="footer">
+          <p>© <%= new Date().getFullYear() %> SwiftDrop</p>
+          <p>Merchant-Focused Courier & Last-Mile Logistics Platform</p>
+        </div>
+
+      </div>
+    </div>
+  </body>
+</html>

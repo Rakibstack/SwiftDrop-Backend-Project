@@ -246,6 +246,10 @@ const getMe = async (user: requestUser) => {
     where: {
       id: user.userId,
     },
+    include: {
+      merchantProfile: true,
+      riderProfile: true,
+    },
     omit: {
       password: true,
     },
