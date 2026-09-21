@@ -146,6 +146,40 @@ const getAllUsers = async (query: IQuery) => {
     },
   };
 };
+const deleteUser = async (userId: string) => {
+  const user = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      isDeleted: true,
+      deletedAt: new Date(),
+    },
+  });
+
+  if (!user) {
+    throw new AppError(httpstatus.NOT_FOUND, "User Not Found");
+  }
+
+  return user;
+};
+const getSingleUser = async (userId: string) => {
+  const getSingleUser = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      merchantProfile: true,
+      riderProfile : true,
+    },
+  });
+
+  if (!getSingleUser) {
+    throw new AppError(httpstatus.NOT_FOUND, "Single User Not Found");
+  }
+
+  return getSingleUser;
+};
 
 export const userService = {
   updateUserProfile,
