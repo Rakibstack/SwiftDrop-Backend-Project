@@ -80,9 +80,12 @@ export const RiderProfileScalarFieldEnum = {
   licenseNumber: 'licenseNumber',
   status: 'status',
   userId: 'userId',
-  approvedAt: 'approvedAt',
+  isSuspended: 'isSuspended',
+  sespendedAt: 'sespendedAt',
   rejectedAt: 'rejectedAt',
   rejectionReason: 'rejectionReason',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

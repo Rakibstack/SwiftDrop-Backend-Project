@@ -4,6 +4,10 @@
 import { prisma } from "../../lib/prisma";
 import { cloudinary } from "../../lib/cloudinary";
 import { UploadApiResponse } from "cloudinary";
+import { IUpdateMerchantProfilePayload } from "./user.validation";
+import { requestUser } from "../../middleware/checkAuth";
+import AppError from "../../utils/AppError";
+import httpstatus from "http-status"
 
 const updateUserProfile = async (buffer: Buffer, userId: string) => {
   const currentUser = await prisma.user.findUnique({
@@ -56,6 +60,27 @@ const updateUserProfile = async (buffer: Buffer, userId: string) => {
   return updatedUser;
 };
 
+const updateMerchantProfile = async (
+  payload: IUpdateMerchantProfilePayload,
+  user: requestUser,
+) => {
+  const existingMerchant = await prisma.merchantProfile.findUnique({
+    where: { userId: user.userId },
+  });
+
+  if (!existingMerchant) {
+    throw new AppError(httpstatus.NOT_FOUND, "Merchant Profile Not Found");
+  }
+
+  const updatedMerchant = await prisma.merchantProfile.update({
+    where: { id: existingMerchant.id },
+    data: payload,
+  });
+
+  return updatedMerchant;
+};
+
 export const userService = {
   updateUserProfile,
+  updateMerchantProfile
 };

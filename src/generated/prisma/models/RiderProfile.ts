@@ -32,9 +32,12 @@ export type RiderProfileMinAggregateOutputType = {
   licenseNumber: string | null
   status: $Enums.RiderStatus | null
   userId: string | null
-  approvedAt: Date | null
+  isSuspended: boolean | null
+  sespendedAt: Date | null
   rejectedAt: Date | null
   rejectionReason: string | null
+  reviewedBy: string | null
+  reviewedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,9 +50,12 @@ export type RiderProfileMaxAggregateOutputType = {
   licenseNumber: string | null
   status: $Enums.RiderStatus | null
   userId: string | null
-  approvedAt: Date | null
+  isSuspended: boolean | null
+  sespendedAt: Date | null
   rejectedAt: Date | null
   rejectionReason: string | null
+  reviewedBy: string | null
+  reviewedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,9 +68,12 @@ export type RiderProfileCountAggregateOutputType = {
   licenseNumber: number
   status: number
   userId: number
-  approvedAt: number
+  isSuspended: number
+  sespendedAt: number
   rejectedAt: number
   rejectionReason: number
+  reviewedBy: number
+  reviewedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -79,9 +88,12 @@ export type RiderProfileMinAggregateInputType = {
   licenseNumber?: true
   status?: true
   userId?: true
-  approvedAt?: true
+  isSuspended?: true
+  sespendedAt?: true
   rejectedAt?: true
   rejectionReason?: true
+  reviewedBy?: true
+  reviewedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,9 +106,12 @@ export type RiderProfileMaxAggregateInputType = {
   licenseNumber?: true
   status?: true
   userId?: true
-  approvedAt?: true
+  isSuspended?: true
+  sespendedAt?: true
   rejectedAt?: true
   rejectionReason?: true
+  reviewedBy?: true
+  reviewedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -109,9 +124,12 @@ export type RiderProfileCountAggregateInputType = {
   licenseNumber?: true
   status?: true
   userId?: true
-  approvedAt?: true
+  isSuspended?: true
+  sespendedAt?: true
   rejectedAt?: true
   rejectionReason?: true
+  reviewedBy?: true
+  reviewedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,9 +215,12 @@ export type RiderProfileGroupByOutputType = {
   licenseNumber: string
   status: $Enums.RiderStatus
   userId: string
-  approvedAt: Date | null
+  isSuspended: boolean
+  sespendedAt: Date | null
   rejectedAt: Date | null
   rejectionReason: string | null
+  reviewedBy: string | null
+  reviewedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: RiderProfileCountAggregateOutputType | null
@@ -233,9 +254,12 @@ export type RiderProfileWhereInput = {
   licenseNumber?: Prisma.StringFilter<"RiderProfile"> | string
   status?: Prisma.EnumRiderStatusFilter<"RiderProfile"> | $Enums.RiderStatus
   userId?: Prisma.StringFilter<"RiderProfile"> | string
-  approvedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  isSuspended?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  sespendedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   rejectedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   rejectionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  reviewedBy?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  reviewedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -249,9 +273,12 @@ export type RiderProfileOrderByWithRelationInput = {
   licenseNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
+  sespendedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -268,9 +295,12 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   address?: Prisma.StringFilter<"RiderProfile"> | string
   vehicleType?: Prisma.EnumVehicleTypeFilter<"RiderProfile"> | $Enums.VehicleType
   status?: Prisma.EnumRiderStatusFilter<"RiderProfile"> | $Enums.RiderStatus
-  approvedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
+  isSuspended?: Prisma.BoolFilter<"RiderProfile"> | boolean
+  sespendedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   rejectedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   rejectionReason?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  reviewedBy?: Prisma.StringNullableFilter<"RiderProfile"> | string | null
+  reviewedAt?: Prisma.DateTimeNullableFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -284,9 +314,12 @@ export type RiderProfileOrderByWithAggregationInput = {
   licenseNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
+  sespendedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RiderProfileCountOrderByAggregateInput
@@ -305,9 +338,12 @@ export type RiderProfileScalarWhereWithAggregatesInput = {
   licenseNumber?: Prisma.StringWithAggregatesFilter<"RiderProfile"> | string
   status?: Prisma.EnumRiderStatusWithAggregatesFilter<"RiderProfile"> | $Enums.RiderStatus
   userId?: Prisma.StringWithAggregatesFilter<"RiderProfile"> | string
-  approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
+  isSuspended?: Prisma.BoolWithAggregatesFilter<"RiderProfile"> | boolean
+  sespendedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   rejectedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
+  reviewedBy?: Prisma.StringNullableWithAggregatesFilter<"RiderProfile"> | string | null
+  reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"RiderProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RiderProfile"> | Date | string
 }
@@ -319,9 +355,12 @@ export type RiderProfileCreateInput = {
   vehicleType: $Enums.VehicleType
   licenseNumber: string
   status?: $Enums.RiderStatus
-  approvedAt?: Date | string | null
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
   rejectedAt?: Date | string | null
   rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
@@ -335,9 +374,12 @@ export type RiderProfileUncheckedCreateInput = {
   licenseNumber: string
   status?: $Enums.RiderStatus
   userId: string
-  approvedAt?: Date | string | null
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
   rejectedAt?: Date | string | null
   rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -349,9 +391,12 @@ export type RiderProfileUpdateInput = {
   vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
-  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
@@ -365,9 +410,12 @@ export type RiderProfileUncheckedUpdateInput = {
   licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -380,9 +428,12 @@ export type RiderProfileCreateManyInput = {
   licenseNumber: string
   status?: $Enums.RiderStatus
   userId: string
-  approvedAt?: Date | string | null
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
   rejectedAt?: Date | string | null
   rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -394,9 +445,12 @@ export type RiderProfileUpdateManyMutationInput = {
   vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
-  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -409,9 +463,12 @@ export type RiderProfileUncheckedUpdateManyInput = {
   licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -424,9 +481,12 @@ export type RiderProfileCountOrderByAggregateInput = {
   licenseNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  approvedAt?: Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
+  sespendedAt?: Prisma.SortOrder
   rejectedAt?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
+  reviewedBy?: Prisma.SortOrder
+  reviewedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -439,9 +499,12 @@ export type RiderProfileMaxOrderByAggregateInput = {
   licenseNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  approvedAt?: Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
+  sespendedAt?: Prisma.SortOrder
   rejectedAt?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
+  reviewedBy?: Prisma.SortOrder
+  reviewedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -454,9 +517,12 @@ export type RiderProfileMinOrderByAggregateInput = {
   licenseNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  approvedAt?: Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
+  sespendedAt?: Prisma.SortOrder
   rejectedAt?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
+  reviewedBy?: Prisma.SortOrder
+  reviewedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -476,6 +542,10 @@ export type EnumVehicleTypeFieldUpdateOperationsInput = {
 
 export type EnumRiderStatusFieldUpdateOperationsInput = {
   set?: $Enums.RiderStatus
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -529,9 +599,12 @@ export type RiderProfileCreateWithoutUserInput = {
   vehicleType: $Enums.VehicleType
   licenseNumber: string
   status?: $Enums.RiderStatus
-  approvedAt?: Date | string | null
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
   rejectedAt?: Date | string | null
   rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -543,9 +616,12 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   vehicleType: $Enums.VehicleType
   licenseNumber: string
   status?: $Enums.RiderStatus
-  approvedAt?: Date | string | null
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
   rejectedAt?: Date | string | null
   rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -573,9 +649,12 @@ export type RiderProfileUpdateWithoutUserInput = {
   vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
-  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -587,9 +666,12 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
   licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
-  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -604,9 +686,12 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   licenseNumber?: boolean
   status?: boolean
   userId?: boolean
-  approvedAt?: boolean
+  isSuspended?: boolean
+  sespendedAt?: boolean
   rejectedAt?: boolean
   rejectionReason?: boolean
+  reviewedBy?: boolean
+  reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -620,9 +705,12 @@ export type RiderProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   licenseNumber?: boolean
   status?: boolean
   userId?: boolean
-  approvedAt?: boolean
+  isSuspended?: boolean
+  sespendedAt?: boolean
   rejectedAt?: boolean
   rejectionReason?: boolean
+  reviewedBy?: boolean
+  reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -636,9 +724,12 @@ export type RiderProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   licenseNumber?: boolean
   status?: boolean
   userId?: boolean
-  approvedAt?: boolean
+  isSuspended?: boolean
+  sespendedAt?: boolean
   rejectedAt?: boolean
   rejectionReason?: boolean
+  reviewedBy?: boolean
+  reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -652,14 +743,17 @@ export type RiderProfileSelectScalar = {
   licenseNumber?: boolean
   status?: boolean
   userId?: boolean
-  approvedAt?: boolean
+  isSuspended?: boolean
+  sespendedAt?: boolean
   rejectedAt?: boolean
   rejectionReason?: boolean
+  reviewedBy?: boolean
+  reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "address" | "vehicleType" | "licenseNumber" | "status" | "userId" | "approvedAt" | "rejectedAt" | "rejectionReason" | "createdAt" | "updatedAt", ExtArgs["result"]["riderProfile"]>
+export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "address" | "vehicleType" | "licenseNumber" | "status" | "userId" | "isSuspended" | "sespendedAt" | "rejectedAt" | "rejectionReason" | "reviewedBy" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["riderProfile"]>
 export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -683,9 +777,12 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
     licenseNumber: string
     status: $Enums.RiderStatus
     userId: string
-    approvedAt: Date | null
+    isSuspended: boolean
+    sespendedAt: Date | null
     rejectedAt: Date | null
     rejectionReason: string | null
+    reviewedBy: string | null
+    reviewedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["riderProfile"]>
@@ -1119,9 +1216,12 @@ export interface RiderProfileFieldRefs {
   readonly licenseNumber: Prisma.FieldRef<"RiderProfile", 'String'>
   readonly status: Prisma.FieldRef<"RiderProfile", 'RiderStatus'>
   readonly userId: Prisma.FieldRef<"RiderProfile", 'String'>
-  readonly approvedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
+  readonly isSuspended: Prisma.FieldRef<"RiderProfile", 'Boolean'>
+  readonly sespendedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly rejectedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly rejectionReason: Prisma.FieldRef<"RiderProfile", 'String'>
+  readonly reviewedBy: Prisma.FieldRef<"RiderProfile", 'String'>
+  readonly reviewedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RiderProfile", 'DateTime'>
 }

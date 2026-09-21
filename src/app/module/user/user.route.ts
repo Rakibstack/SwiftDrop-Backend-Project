@@ -5,6 +5,8 @@ import { userController } from "./user.controller";
 import { auth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
 import { upload } from "../../lib/multer";
+import { validationRequest } from "../../middleware/validationMiddleware";
+import { updateMerchantProfileSchema } from "./user.validation";
 
 const router = Router();
 
@@ -14,5 +16,12 @@ router.patch(
    upload.single("profileImage"),
   userController.updateUserProfile,
 );
+router.patch(
+  "/merchant-profile",
+  validationRequest(updateMerchantProfileSchema),
+  auth(UserRole.MERCHANT),
+  userController.updateMerchantProfile,
+);
+
 
 export const UserRoutes = router;

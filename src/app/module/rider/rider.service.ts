@@ -7,12 +7,20 @@ import config from "../../config";
 import crypto from "crypto";
 import AppError from "../../utils/AppError";
 import httpstatus from "http-status";
-import { IApplyAsRiderPayload, IVerifyEmailPayload } from "./rider.validation";
+import {
+  IApplyAsRiderPayload,
+  IReviewRiderPayload,
+  IUpdateRiderProfilePayload,
+  IVerifyEmailPayload,
+} from "./rider.validation";
 import transporter from "../../lib/nodemailer";
 import redisClient from "../../lib/redis";
 import path from "path";
 import ejs from "ejs";
-import { UserRole } from "../../../generated/prisma/enums";
+import { RiderStatus, UserRole, VehicleType } from "../../../generated/prisma/enums";
+import { requestUser } from "../../middleware/checkAuth";
+import { IQuery } from "../../interface";
+import { RiderProfileWhereInput } from "../../../generated/prisma/models";
 
 const applyAsRider = async (payload: IApplyAsRiderPayload) => {
   const isUserExist = await prisma.user.findUnique({
@@ -131,7 +139,185 @@ const verifyRiderEmail = async (payload: IVerifyEmailPayload) => {
   return verifyUser;
 };
 
+const approveRider = async (
+  payload: IReviewRiderPayload,
+  reviewer: requestUser,
+) => {
+  const { riderId, status, rejectionReason } = payload;
+
+  const existingRider = await prisma.riderProfile.findUnique({
+    where: { id: riderId },
+    include: { user: true },
+  });
+  if (!existingRider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Application Not Found.");
+  }
+  if (!existingRider.user.emailVerified) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "Rider Has Not Verified Their Email Yet.Application Can Not Be reviewed ",
+    );
+  }
+
+  if (existingRider.status !== RiderStatus.PENDING) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Rider Application Has Already Been ${existingRider.status.toLowerCase()}`,
+    );
+  }
+
+  const updateRider = await prisma.riderProfile.update({
+    where: {
+      id: riderId,
+    },
+    include: { user: true },
+    data: {
+      status,
+      rejectionReason: status === RiderStatus.REJECTED ? rejectionReason : null,
+      rejectedAt: status === RiderStatus.REJECTED ? new Date() : null,
+
+      reviewedBy: reviewer.userId,
+      reviewedAt: new Date(),
+    },
+  });
+
+  const isApproved = status === RiderStatus.ACTIVE;
+
+  const templateName = isApproved
+    ? "SwiftDrop-RiderApplicationApproved.ejs"
+    : "SwiftDrop-RiderApplicationRejected.ejs";
+
+  const templatePath = path.join(
+    process.cwd(),
+    `src/app/template/${templateName}`,
+  );
+
+  const html = await ejs.renderFile(templatePath, {
+    name: updateRider.user.name,
+    rejectionReason,
+  });
+
+  await transporter.sendMail({
+    from: config.sender_email,
+    to: updateRider.user.email,
+    subject: isApproved
+      ? "Your SwiftDrop Rider Application Has Been Approved"
+      : "Update on Your SwiftDrop Rider Application",
+    html,
+  });
+  return updateRider
+};
+
+const getAllRiders = async (query: IQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+
+  const addConditions: RiderProfileWhereInput[] = [];
+
+  //searcing
+  if (query.searchTerm) {
+    addConditions.push({
+      OR: [
+        {
+          phone: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          address: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+
+        {
+          licenseNumber: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+// Vehicle Type - Enum
+if (query.vehicleType) {
+  addConditions.push({
+    vehicleType: query.vehicleType as VehicleType,
+  });
+}
+
+// Address - String
+if (query.address) {
+  addConditions.push({
+    address: {
+      contains: query.address,
+      mode: "insensitive",
+    },
+  });
+}
+
+// License Number - String
+if (query.licenseNumber) {
+  addConditions.push({
+    licenseNumber: {
+      equals: query.licenseNumber,
+      mode: "insensitive",
+    },
+  });
+}
+
+// Rider Status - Enum
+if (query.status) {
+  addConditions.push({
+    status: query.status as RiderStatus,
+  });
+}
+  addConditions.push({
+    isSuspended: false,
+  });
+
+  const totalRider = await prisma.riderProfile.count({
+    where: {
+      AND: addConditions,
+    },
+  });
+  const allRiders = await prisma.riderProfile.findMany({
+    where: {
+      AND: addConditions,
+    },
+    take: limit,
+    skip: skip,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
+  return {
+    data: allRiders,
+    meta: {
+      page: page,
+      limit: limit,
+      total: totalRider,
+      totalPages: Math.ceil(totalRider / limit),
+    },
+  };
+};
+
+
 export const riderService = {
   applyAsRider,
-  verifyRiderEmail
+  verifyRiderEmail,
+  approveRider,
+  getAllRiders,
+  getSingleRider,
+  updateRiderProfile
 };

@@ -1,5 +1,5 @@
 model RiderProfile {
-  id            String      @id @default(uuid())
+  id            String      @id @default(uuid()) 
   phone         String
   address       String
   vehicleType   VehicleType
@@ -7,12 +7,15 @@ model RiderProfile {
 
   status RiderStatus @default(PENDING)
 
-  userId   String  @unique
-  user     User   @relation(fields: [userId],references: [id],onDelete: Cascade,onUpdate: Cascade)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  approvedAt      DateTime?
+  isSuspended     Boolean   @default(false)
+  sespendedAt     DateTime?
   rejectedAt      DateTime?
   rejectionReason String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -20,3 +23,4 @@ model RiderProfile {
   @@index([status])
   @@map("rider_profiles")
 }
+
