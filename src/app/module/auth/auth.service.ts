@@ -13,6 +13,7 @@ import transporter from "../../lib/nodemailer";
 import ejs from "ejs";
 import {
   IForgotPasswordPayload,
+  IGoogleLoginPayload,
   ILoginUserPayload,
   IMerchantRegisterPayload,
   IResetPasswordPayload,
@@ -20,8 +21,14 @@ import {
 } from "./auth.validation";
 import { jwtUtils } from "../../utils/jwt";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
-import { UserStatus } from "../../../generated/prisma/enums";
+import {
+  AuthProvider,
+  UserRole,
+  UserStatus,
+} from "../../../generated/prisma/enums";
 import { requestUser } from "../../middleware/checkAuth";
+import googleClient from "../../lib/googleAuth";
+import { TokenPayload } from "google-auth-library";
 
 const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const {
@@ -424,11 +431,144 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
   });
 };
 
+const googleLogin = async (payload: IGoogleLoginPayload) => {
+  let googleIdTokenPayload: TokenPayload | null | undefined = null;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: payload.idToken,
+      audience: config.google_client_id,
+    });
+    googleIdTokenPayload = ticket.getPayload();
+  } catch (error) {
+    console.log("Google Id Token Varified Failed", error);
+    throw new AppError(
+      httpstatus.UNAUTHORIZED,
+      "Invalid Or Expired Google Id Token",
+    );
+  }
+
+  if (!googleIdTokenPayload) {
+    throw new AppError(
+      httpstatus.UNAUTHORIZED,
+      "Invalid Or Expired Google Id Token",
+    );
+  }
+
+  if (!googleIdTokenPayload.email) {
+    throw new AppError(httpstatus.BAD_REQUEST, "Google User Email Not Found");
+  }
+
+  if (!googleIdTokenPayload.name) {
+    throw new AppError(httpstatus.BAD_REQUEST, "Google User Name Not Found");
+  }
+  if (googleIdTokenPayload.email_verified !== true) {
+    throw new AppError(httpstatus.UNAUTHORIZED, "Google email is not verified");
+  }
+
+  const isMerchantExistWithGoogleAuth = await prisma.user.findUnique({
+    where: {
+      email: googleIdTokenPayload.email,
+      role: UserRole.MERCHANT,
+      googleId: googleIdTokenPayload.sub,
+    },
+  });
+
+  let user = isMerchantExistWithGoogleAuth;
+
+  if (!isMerchantExistWithGoogleAuth) {
+    const isMerchantExistWithCredential = await prisma.user.findUnique({
+      where: {
+        email: googleIdTokenPayload.email,
+        role: UserRole.MERCHANT,
+        authProvider: AuthProvider.CREDENTIAL,
+      },
+    });
+
+    if (isMerchantExistWithCredential) {
+      if (!isMerchantExistWithCredential.emailVerified) {
+        throw new AppError(httpstatus.FORBIDDEN, "User Email Not Varified");
+      }
+      if (isMerchantExistWithCredential.status === UserStatus.SUSPENDED) {
+        throw new AppError(httpstatus.FORBIDDEN, "User Is Suspended");
+      }
+      if (
+        isMerchantExistWithCredential.isDeleted ||
+        isMerchantExistWithCredential.status === UserStatus.DELETED
+      ) {
+        throw new AppError(httpstatus.NOT_FOUND, "User Is Deleted");
+      }
+      user = await prisma.user.update({
+        where: {
+          id: isMerchantExistWithCredential.id,
+        },
+        data: {
+          googleId: googleIdTokenPayload.sub,
+        },
+      });
+    }
+  } else {
+    user = await prisma.user.create({
+      data: {
+        name: googleIdTokenPayload.name,
+        email: googleIdTokenPayload.email,
+        role: UserRole.MERCHANT,
+        googleId: googleIdTokenPayload.sub,
+        authProvider: AuthProvider.GOOGLE,
+        emailVerified: true,
+      },
+    });
+    const templatePath = path.join(
+      process.cwd(),
+      "src/app/template/SwiftDrop-WelcomeEmail.ejs",
+    );
+
+    const html = await ejs.renderFile(templatePath, {
+      name: googleIdTokenPayload.name,
+    });
+
+    await transporter.sendMail({
+      from: config.sender_email,
+      to: googleIdTokenPayload.email,
+      subject: "Welcome to SwiftDrop",
+      html,
+    });
+  }
+  if (!user) {
+    throw new AppError(httpstatus.NOT_FOUND, "User Not Found");
+  }
+
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
+  );
+
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const AuthService = {
   registerMerchant,
   verifyMerchantEmail,
-  loginUser,getMe,
+  loginUser,
+  getMe,
   refreshToken,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  googleLogin,
 };

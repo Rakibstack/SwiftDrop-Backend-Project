@@ -116,3 +116,7 @@ export const resetPasswordSchema = z.object({
 });
 
 export type IResetPasswordPayload = z.infer<typeof resetPasswordSchema>;
+
+export interface IGoogleLoginPayload {
+	idToken: string;
+}
