@@ -1,7 +1,7 @@
 
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync";
-import z from "zod";
+import type z from "zod";
 import AppError from "../utils/AppError";
 import httpstatus from "http-status";
 

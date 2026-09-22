@@ -1,6 +1,4 @@
-/** biome-ignore-all lint/style/useNodejsImportProtocol: <explanation> */
-/** biome-ignore-all lint/style/useImportType: <explanation> */
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
+
 import { prisma } from "../../lib/prisma";
 import AppError from "../../utils/AppError";
 import httpstatus from "http-status";
@@ -11,7 +9,7 @@ import redisClient from "../../lib/redis";
 import path from "path";
 import transporter from "../../lib/nodemailer";
 import ejs from "ejs";
-import {
+import type {
   IForgotPasswordPayload,
   IGoogleLoginPayload,
   ILoginUserPayload,
@@ -20,15 +18,15 @@ import {
   IVerifyEmailPayload,
 } from "./auth.validation";
 import { jwtUtils } from "../../utils/jwt";
-import { JwtPayload, SignOptions } from "jsonwebtoken";
+import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import {
   AuthProvider,
   UserRole,
   UserStatus,
 } from "../../../generated/prisma/enums";
-import { requestUser } from "../../middleware/checkAuth";
+import type { requestUser } from "../../middleware/checkAuth";
 import googleClient from "../../lib/googleAuth";
-import { TokenPayload } from "google-auth-library";
+import type { TokenPayload } from "google-auth-library";
 
 const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const {

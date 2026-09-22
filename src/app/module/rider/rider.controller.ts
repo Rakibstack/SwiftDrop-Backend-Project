@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { riderService } from "./rider.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
-import { requestUser } from "../../middleware/checkAuth";
+import type { requestUser } from "../../middleware/checkAuth";
 
 const applyAsRider = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

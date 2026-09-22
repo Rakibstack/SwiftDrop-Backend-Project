@@ -1,13 +1,11 @@
-/** biome-ignore-all lint/style/useNodejsImportProtocol: <explanation> */
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
-/** biome-ignore-all lint/style/useImportType: <explanation> */
+
 import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
 import crypto from "crypto";
 import AppError from "../../utils/AppError";
 import httpstatus from "http-status";
-import {
+import type {
   IApplyAsRiderPayload,
   IReviewRiderPayload,
   IUpdateRiderProfilePayload,
@@ -17,10 +15,10 @@ import transporter from "../../lib/nodemailer";
 import redisClient from "../../lib/redis";
 import path from "path";
 import ejs from "ejs";
-import { RiderStatus, UserRole, VehicleType } from "../../../generated/prisma/enums";
-import { requestUser } from "../../middleware/checkAuth";
-import { IQuery } from "../../interface";
-import { RiderProfileWhereInput } from "../../../generated/prisma/models";
+import { RiderStatus, UserRole, type VehicleType } from "../../../generated/prisma/enums";
+import type { requestUser } from "../../middleware/checkAuth";
+import type { IQuery } from "../../interface";
+import type { RiderProfileWhereInput } from "../../../generated/prisma/models";
 
 const applyAsRider = async (payload: IApplyAsRiderPayload) => {
   const isUserExist = await prisma.user.findUnique({

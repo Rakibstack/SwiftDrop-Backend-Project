@@ -6,7 +6,7 @@ import { catchAsync } from "../utils/catchAsync";
 import { jwtUtils } from "../utils/jwt";
 import AppError from "../utils/AppError";
 import httpstatus from "http-status";
-import { UserRole } from "../../generated/prisma/enums";
+import type { UserRole } from "../../generated/prisma/enums";
 
 export interface requestUser {
   email: string;

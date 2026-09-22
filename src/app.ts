@@ -1,6 +1,4 @@
-/** biome-ignore-all lint/style/useImportType: <explanation> */
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
-import express, { Application, Request, Response } from "express";
+import express, { type Application, type Request, type Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import httpstatus from "http-status";

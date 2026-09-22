@@ -1,15 +1,13 @@
-// biome-ignore lint/style/useImportType: <explanation>
-/** biome-ignore-all lint/style/useImportType: <explanation> */
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
+
 import { prisma } from "../../lib/prisma";
 import { cloudinary } from "../../lib/cloudinary";
-import { UploadApiResponse } from "cloudinary";
-import { IUpdateMerchantProfilePayload } from "./user.validation";
-import { requestUser } from "../../middleware/checkAuth";
+import type { UploadApiResponse } from "cloudinary";
+import type { IUpdateMerchantProfilePayload } from "./user.validation";
+import type { requestUser } from "../../middleware/checkAuth";
 import AppError from "../../utils/AppError";
 import httpstatus from "http-status";
-import { IQuery } from "../../interface";
-import { UserWhereInput } from "../../../generated/prisma/models";
+import type { IQuery } from "../../interface";
+import type { UserWhereInput } from "../../../generated/prisma/models";
 
 // user only api
 const updateUserProfile = async (buffer: Buffer, userId: string) => {

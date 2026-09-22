@@ -1,4 +1,3 @@
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
 import { Router } from "express";
 import { AuthController } from "./auth.controller";
 import { validationRequest } from "../../middleware/validationMiddleware";

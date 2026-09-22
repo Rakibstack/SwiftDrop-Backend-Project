@@ -1,6 +1,5 @@
-/** biome-ignore-all lint/style/useImportType: <explanation> */
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
-import { NextFunction, Request, Response } from "express";
+
+import type { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { AuthService } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
