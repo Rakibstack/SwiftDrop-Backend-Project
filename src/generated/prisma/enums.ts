@@ -76,6 +76,7 @@ export const PaymentStatus = {
   PAID: 'PAID',
   FAILED: 'FAILED',
   CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
   REFUNDED: 'REFUNDED'
 } as const
 

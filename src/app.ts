@@ -9,6 +9,7 @@ import { notFound } from "./app/middleware/notFoundRoute";
 import { UserRoutes } from "./app/module/user/user.route";
 import { RiderRoutes } from "./app/module/rider/rider.route";
 import { ShipmentRouter } from "./app/module/shipment/shipment.route";
+import { PaymentRoutes } from "./app/module/payment/payment.route";
 
 const app: Application = express();
 
@@ -27,6 +28,7 @@ app.use('/api/v1/auth',AuthRoutes)
 app.use('/api/v1/user',UserRoutes)
 app.use('/api/v1/rider',RiderRoutes)
 app.use('/api/v1/shipment',ShipmentRouter)
+app.use('/api/v1/payment',PaymentRoutes)
 
 app.get("/", async (req: Request, res: Response) => {
   res.status(httpstatus.OK).json({
