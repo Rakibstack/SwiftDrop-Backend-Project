@@ -199,6 +199,7 @@ export type MerchantProfileWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"MerchantProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MerchantProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  shipments?: Prisma.ShipmentListRelationFilter
 }
 
 export type MerchantProfileOrderByWithRelationInput = {
@@ -210,6 +211,7 @@ export type MerchantProfileOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  shipments?: Prisma.ShipmentOrderByRelationAggregateInput
 }
 
 export type MerchantProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -224,6 +226,7 @@ export type MerchantProfileWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"MerchantProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MerchantProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  shipments?: Prisma.ShipmentListRelationFilter
 }, "id" | "userId">
 
 export type MerchantProfileOrderByWithAggregationInput = {
@@ -260,6 +263,7 @@ export type MerchantProfileCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMerchantProfileInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutMerchantInput
 }
 
 export type MerchantProfileUncheckedCreateInput = {
@@ -270,6 +274,7 @@ export type MerchantProfileUncheckedCreateInput = {
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutMerchantInput
 }
 
 export type MerchantProfileUpdateInput = {
@@ -280,6 +285,7 @@ export type MerchantProfileUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMerchantProfileNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutMerchantNestedInput
 }
 
 export type MerchantProfileUncheckedUpdateInput = {
@@ -290,6 +296,7 @@ export type MerchantProfileUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutMerchantNestedInput
 }
 
 export type MerchantProfileCreateManyInput = {
@@ -351,9 +358,28 @@ export type MerchantProfileMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type MerchantProfileScalarRelationFilter = {
+  is?: Prisma.MerchantProfileWhereInput
+  isNot?: Prisma.MerchantProfileWhereInput
+}
+
 export type MerchantProfileNullableScalarRelationFilter = {
   is?: Prisma.MerchantProfileWhereInput | null
   isNot?: Prisma.MerchantProfileWhereInput | null
+}
+
+export type MerchantProfileCreateNestedOneWithoutShipmentsInput = {
+  create?: Prisma.XOR<Prisma.MerchantProfileCreateWithoutShipmentsInput, Prisma.MerchantProfileUncheckedCreateWithoutShipmentsInput>
+  connectOrCreate?: Prisma.MerchantProfileCreateOrConnectWithoutShipmentsInput
+  connect?: Prisma.MerchantProfileWhereUniqueInput
+}
+
+export type MerchantProfileUpdateOneRequiredWithoutShipmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.MerchantProfileCreateWithoutShipmentsInput, Prisma.MerchantProfileUncheckedCreateWithoutShipmentsInput>
+  connectOrCreate?: Prisma.MerchantProfileCreateOrConnectWithoutShipmentsInput
+  upsert?: Prisma.MerchantProfileUpsertWithoutShipmentsInput
+  connect?: Prisma.MerchantProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantProfileUpdateToOneWithWhereWithoutShipmentsInput, Prisma.MerchantProfileUpdateWithoutShipmentsInput>, Prisma.MerchantProfileUncheckedUpdateWithoutShipmentsInput>
 }
 
 export type MerchantProfileCreateNestedOneWithoutUserInput = {
@@ -388,6 +414,62 @@ export type MerchantProfileUncheckedUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MerchantProfileUpdateToOneWithWhereWithoutUserInput, Prisma.MerchantProfileUpdateWithoutUserInput>, Prisma.MerchantProfileUncheckedUpdateWithoutUserInput>
 }
 
+export type MerchantProfileCreateWithoutShipmentsInput = {
+  id?: string
+  businessName: string
+  businessPhone: string
+  businessAddress: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutMerchantProfileInput
+}
+
+export type MerchantProfileUncheckedCreateWithoutShipmentsInput = {
+  id?: string
+  businessName: string
+  businessPhone: string
+  businessAddress: string
+  userId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type MerchantProfileCreateOrConnectWithoutShipmentsInput = {
+  where: Prisma.MerchantProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.MerchantProfileCreateWithoutShipmentsInput, Prisma.MerchantProfileUncheckedCreateWithoutShipmentsInput>
+}
+
+export type MerchantProfileUpsertWithoutShipmentsInput = {
+  update: Prisma.XOR<Prisma.MerchantProfileUpdateWithoutShipmentsInput, Prisma.MerchantProfileUncheckedUpdateWithoutShipmentsInput>
+  create: Prisma.XOR<Prisma.MerchantProfileCreateWithoutShipmentsInput, Prisma.MerchantProfileUncheckedCreateWithoutShipmentsInput>
+  where?: Prisma.MerchantProfileWhereInput
+}
+
+export type MerchantProfileUpdateToOneWithWhereWithoutShipmentsInput = {
+  where?: Prisma.MerchantProfileWhereInput
+  data: Prisma.XOR<Prisma.MerchantProfileUpdateWithoutShipmentsInput, Prisma.MerchantProfileUncheckedUpdateWithoutShipmentsInput>
+}
+
+export type MerchantProfileUpdateWithoutShipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  businessPhone?: Prisma.StringFieldUpdateOperationsInput | string
+  businessAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutMerchantProfileNestedInput
+}
+
+export type MerchantProfileUncheckedUpdateWithoutShipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  businessPhone?: Prisma.StringFieldUpdateOperationsInput | string
+  businessAddress?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type MerchantProfileCreateWithoutUserInput = {
   id?: string
   businessName: string
@@ -395,6 +477,7 @@ export type MerchantProfileCreateWithoutUserInput = {
   businessAddress: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutMerchantInput
 }
 
 export type MerchantProfileUncheckedCreateWithoutUserInput = {
@@ -404,6 +487,7 @@ export type MerchantProfileUncheckedCreateWithoutUserInput = {
   businessAddress: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutMerchantInput
 }
 
 export type MerchantProfileCreateOrConnectWithoutUserInput = {
@@ -429,6 +513,7 @@ export type MerchantProfileUpdateWithoutUserInput = {
   businessAddress?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipments?: Prisma.ShipmentUpdateManyWithoutMerchantNestedInput
 }
 
 export type MerchantProfileUncheckedUpdateWithoutUserInput = {
@@ -438,8 +523,38 @@ export type MerchantProfileUncheckedUpdateWithoutUserInput = {
   businessAddress?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutMerchantNestedInput
 }
 
+
+/**
+ * Count Type MerchantProfileCountOutputType
+ */
+
+export type MerchantProfileCountOutputType = {
+  shipments: number
+}
+
+export type MerchantProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  shipments?: boolean | MerchantProfileCountOutputTypeCountShipmentsArgs
+}
+
+/**
+ * MerchantProfileCountOutputType without action
+ */
+export type MerchantProfileCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MerchantProfileCountOutputType
+   */
+  select?: Prisma.MerchantProfileCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * MerchantProfileCountOutputType without action
+ */
+export type MerchantProfileCountOutputTypeCountShipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ShipmentWhereInput
+}
 
 
 export type MerchantProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -451,6 +566,8 @@ export type MerchantProfileSelect<ExtArgs extends runtime.Types.Extensions.Inter
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  shipments?: boolean | Prisma.MerchantProfile$shipmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.MerchantProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["merchantProfile"]>
 
 export type MerchantProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -488,6 +605,8 @@ export type MerchantProfileSelectScalar = {
 export type MerchantProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "businessName" | "businessPhone" | "businessAddress" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["merchantProfile"]>
 export type MerchantProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  shipments?: boolean | Prisma.MerchantProfile$shipmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.MerchantProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MerchantProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -500,6 +619,7 @@ export type $MerchantProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "MerchantProfile"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    shipments: Prisma.$ShipmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -904,6 +1024,7 @@ readonly fields: MerchantProfileFieldRefs;
 export interface Prisma__MerchantProfileClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  shipments<T extends Prisma.MerchantProfile$shipmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MerchantProfile$shipmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1338,6 +1459,30 @@ export type MerchantProfileDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many MerchantProfiles to delete.
    */
   limit?: number
+}
+
+/**
+ * MerchantProfile.shipments
+ */
+export type MerchantProfile$shipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Shipment
+   */
+  select?: Prisma.ShipmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Shipment
+   */
+  omit?: Prisma.ShipmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ShipmentInclude<ExtArgs> | null
+  where?: Prisma.ShipmentWhereInput
+  orderBy?: Prisma.ShipmentOrderByWithRelationInput | Prisma.ShipmentOrderByWithRelationInput[]
+  cursor?: Prisma.ShipmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ShipmentScalarFieldEnum | Prisma.ShipmentScalarFieldEnum[]
 }
 
 /**

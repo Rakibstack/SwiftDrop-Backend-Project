@@ -8,6 +8,7 @@ import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFoundRoute";
 import { UserRoutes } from "./app/module/user/user.route";
 import { RiderRoutes } from "./app/module/rider/rider.route";
+import { ShipmentRouter } from "./app/module/shipment/shipment.route";
 
 const app: Application = express();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use('/api/v1/auth',AuthRoutes)
 app.use('/api/v1/user',UserRoutes)
 app.use('/api/v1/rider',RiderRoutes)
+app.use('/api/v1/shipment',ShipmentRouter)
 
 app.get("/", async (req: Request, res: Response) => {
   res.status(httpstatus.OK).json({

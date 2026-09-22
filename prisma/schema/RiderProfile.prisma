@@ -1,5 +1,5 @@
 model RiderProfile {
-  id            String      @id @default(uuid()) 
+  id            String      @id @default(uuid())
   phone         String
   address       String
   vehicleType   VehicleType
@@ -17,10 +17,11 @@ model RiderProfile {
   reviewedBy      String?
   reviewedAt      DateTime?
 
+  shipments Shipment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
   @@map("rider_profiles")
 }
-

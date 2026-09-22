@@ -47,10 +47,30 @@ export { Prisma }
  */
 export type RiderProfile = Prisma.RiderProfileModel
 /**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
  * Model MerchantProfile
  * 
  */
 export type MerchantProfile = Prisma.MerchantProfileModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel
+/**
+ * Model Shipment
+ * 
+ */
+export type Shipment = Prisma.ShipmentModel
+/**
+ * Model TrackingEvent
+ * 
+ */
+export type TrackingEvent = Prisma.TrackingEventModel
 /**
  * Model User
  * 

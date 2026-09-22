@@ -1,0 +1,53 @@
+model Shipment {
+  id String @id @default(uuid())
+
+  trackingId String @unique
+
+  merchantId String
+  merchant MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  riderId String?
+  rider RiderProfile? @relation(fields: [riderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  senderName String
+  senderPhone String
+  senderAddress String
+
+  recipientName String
+  recipientPhone String
+  recipientAddress String
+
+  parcelType String
+  parcelDescription String?
+  weight Decimal? @db.Decimal(8, 2)
+
+  deliveryFee Decimal @db.Decimal(10, 2)
+  codAmount Decimal @default(0) @db.Decimal(10, 2)
+
+  status ShipmentStatus @default(PAYMENT_PENDING)
+
+  // Delivery timestamps
+  assignedAt DateTime?
+  pickedUpAt DateTime?
+  deliveredAt DateTime?
+  deliveryFailedAt DateTime?
+
+  failureReason String?
+
+
+  cancelledAt DateTime?
+  cancellationReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments Payment[]
+  trackingEvents TrackingEvent[]
+
+  @@index([merchantId])
+  @@index([riderId])
+  @@index([status])
+  @@index([createdAt])
+
+  @@map("shipments")
+}

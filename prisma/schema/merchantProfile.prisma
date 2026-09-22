@@ -4,11 +4,12 @@ model MerchantProfile {
     businessPhone   String
     businessAddress String
 
-    userId          String @unique
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    shipments Shipment[]
 
     @@map("merchant_profiles")
 }

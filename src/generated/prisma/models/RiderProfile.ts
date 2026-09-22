@@ -263,6 +263,7 @@ export type RiderProfileWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  shipments?: Prisma.ShipmentListRelationFilter
 }
 
 export type RiderProfileOrderByWithRelationInput = {
@@ -282,6 +283,7 @@ export type RiderProfileOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  shipments?: Prisma.ShipmentOrderByRelationAggregateInput
 }
 
 export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -304,6 +306,7 @@ export type RiderProfileWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RiderProfile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  shipments?: Prisma.ShipmentListRelationFilter
 }, "id" | "licenseNumber" | "userId">
 
 export type RiderProfileOrderByWithAggregationInput = {
@@ -364,6 +367,7 @@ export type RiderProfileCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateInput = {
@@ -382,6 +386,7 @@ export type RiderProfileUncheckedCreateInput = {
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUpdateInput = {
@@ -400,6 +405,7 @@ export type RiderProfileUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateInput = {
@@ -418,6 +424,7 @@ export type RiderProfileUncheckedUpdateInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileCreateManyInput = {
@@ -560,6 +567,22 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type RiderProfileCreateNestedOneWithoutShipmentsInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutShipmentsInput, Prisma.RiderProfileUncheckedCreateWithoutShipmentsInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutShipmentsInput
+  connect?: Prisma.RiderProfileWhereUniqueInput
+}
+
+export type RiderProfileUpdateOneWithoutShipmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutShipmentsInput, Prisma.RiderProfileUncheckedCreateWithoutShipmentsInput>
+  connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutShipmentsInput
+  upsert?: Prisma.RiderProfileUpsertWithoutShipmentsInput
+  disconnect?: Prisma.RiderProfileWhereInput | boolean
+  delete?: Prisma.RiderProfileWhereInput | boolean
+  connect?: Prisma.RiderProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutShipmentsInput, Prisma.RiderProfileUpdateWithoutShipmentsInput>, Prisma.RiderProfileUncheckedUpdateWithoutShipmentsInput>
+}
+
 export type RiderProfileCreateNestedOneWithoutUserInput = {
   create?: Prisma.XOR<Prisma.RiderProfileCreateWithoutUserInput, Prisma.RiderProfileUncheckedCreateWithoutUserInput>
   connectOrCreate?: Prisma.RiderProfileCreateOrConnectWithoutUserInput
@@ -592,6 +615,94 @@ export type RiderProfileUncheckedUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RiderProfileUpdateToOneWithWhereWithoutUserInput, Prisma.RiderProfileUpdateWithoutUserInput>, Prisma.RiderProfileUncheckedUpdateWithoutUserInput>
 }
 
+export type RiderProfileCreateWithoutShipmentsInput = {
+  id?: string
+  phone: string
+  address: string
+  vehicleType: $Enums.VehicleType
+  licenseNumber: string
+  status?: $Enums.RiderStatus
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
+  rejectedAt?: Date | string | null
+  rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutRiderProfileInput
+}
+
+export type RiderProfileUncheckedCreateWithoutShipmentsInput = {
+  id?: string
+  phone: string
+  address: string
+  vehicleType: $Enums.VehicleType
+  licenseNumber: string
+  status?: $Enums.RiderStatus
+  userId: string
+  isSuspended?: boolean
+  sespendedAt?: Date | string | null
+  rejectedAt?: Date | string | null
+  rejectionReason?: string | null
+  reviewedBy?: string | null
+  reviewedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RiderProfileCreateOrConnectWithoutShipmentsInput = {
+  where: Prisma.RiderProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutShipmentsInput, Prisma.RiderProfileUncheckedCreateWithoutShipmentsInput>
+}
+
+export type RiderProfileUpsertWithoutShipmentsInput = {
+  update: Prisma.XOR<Prisma.RiderProfileUpdateWithoutShipmentsInput, Prisma.RiderProfileUncheckedUpdateWithoutShipmentsInput>
+  create: Prisma.XOR<Prisma.RiderProfileCreateWithoutShipmentsInput, Prisma.RiderProfileUncheckedCreateWithoutShipmentsInput>
+  where?: Prisma.RiderProfileWhereInput
+}
+
+export type RiderProfileUpdateToOneWithWhereWithoutShipmentsInput = {
+  where?: Prisma.RiderProfileWhereInput
+  data: Prisma.XOR<Prisma.RiderProfileUpdateWithoutShipmentsInput, Prisma.RiderProfileUncheckedUpdateWithoutShipmentsInput>
+}
+
+export type RiderProfileUpdateWithoutShipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+  licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutRiderProfileNestedInput
+}
+
+export type RiderProfileUncheckedUpdateWithoutShipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  vehicleType?: Prisma.EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
+  licenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumRiderStatusFieldUpdateOperationsInput | $Enums.RiderStatus
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sespendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rejectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type RiderProfileCreateWithoutUserInput = {
   id?: string
   phone: string
@@ -607,6 +718,7 @@ export type RiderProfileCreateWithoutUserInput = {
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileUncheckedCreateWithoutUserInput = {
@@ -624,6 +736,7 @@ export type RiderProfileUncheckedCreateWithoutUserInput = {
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutRiderInput
 }
 
 export type RiderProfileCreateOrConnectWithoutUserInput = {
@@ -657,6 +770,7 @@ export type RiderProfileUpdateWithoutUserInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipments?: Prisma.ShipmentUpdateManyWithoutRiderNestedInput
 }
 
 export type RiderProfileUncheckedUpdateWithoutUserInput = {
@@ -674,8 +788,38 @@ export type RiderProfileUncheckedUpdateWithoutUserInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutRiderNestedInput
 }
 
+
+/**
+ * Count Type RiderProfileCountOutputType
+ */
+
+export type RiderProfileCountOutputType = {
+  shipments: number
+}
+
+export type RiderProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  shipments?: boolean | RiderProfileCountOutputTypeCountShipmentsArgs
+}
+
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RiderProfileCountOutputType
+   */
+  select?: Prisma.RiderProfileCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * RiderProfileCountOutputType without action
+ */
+export type RiderProfileCountOutputTypeCountShipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ShipmentWhereInput
+}
 
 
 export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -695,6 +839,8 @@ export type RiderProfileSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  shipments?: boolean | Prisma.RiderProfile$shipmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["riderProfile"]>
 
 export type RiderProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -756,6 +902,8 @@ export type RiderProfileSelectScalar = {
 export type RiderProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "address" | "vehicleType" | "licenseNumber" | "status" | "userId" | "isSuspended" | "sespendedAt" | "rejectedAt" | "rejectionReason" | "reviewedBy" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["riderProfile"]>
 export type RiderProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  shipments?: boolean | Prisma.RiderProfile$shipmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.RiderProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RiderProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -768,6 +916,7 @@ export type $RiderProfilePayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "RiderProfile"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    shipments: Prisma.$ShipmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1180,6 +1329,7 @@ readonly fields: RiderProfileFieldRefs;
 export interface Prisma__RiderProfileClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  shipments<T extends Prisma.RiderProfile$shipmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RiderProfile$shipmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1622,6 +1772,30 @@ export type RiderProfileDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many RiderProfiles to delete.
    */
   limit?: number
+}
+
+/**
+ * RiderProfile.shipments
+ */
+export type RiderProfile$shipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Shipment
+   */
+  select?: Prisma.ShipmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Shipment
+   */
+  omit?: Prisma.ShipmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ShipmentInclude<ExtArgs> | null
+  where?: Prisma.ShipmentWhereInput
+  orderBy?: Prisma.ShipmentOrderByWithRelationInput | Prisma.ShipmentOrderByWithRelationInput[]
+  cursor?: Prisma.ShipmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ShipmentScalarFieldEnum | Prisma.ShipmentScalarFieldEnum[]
 }
 
 /**

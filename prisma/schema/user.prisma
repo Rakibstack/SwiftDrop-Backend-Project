@@ -20,7 +20,7 @@ model User {
 
     merchantProfile MerchantProfile?
     riderProfile    RiderProfile?
-
+    auditLogs       AuditLog[]
 
     @@map("users")
 }

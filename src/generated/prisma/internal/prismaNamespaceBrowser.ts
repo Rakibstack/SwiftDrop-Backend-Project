@@ -52,7 +52,11 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   RiderProfile: 'RiderProfile',
+  AuditLog: 'AuditLog',
   MerchantProfile: 'MerchantProfile',
+  Payment: 'Payment',
+  Shipment: 'Shipment',
+  TrackingEvent: 'TrackingEvent',
   User: 'User'
 } as const
 
@@ -93,6 +97,19 @@ export const RiderProfileScalarFieldEnum = {
 export type RiderProfileScalarFieldEnum = (typeof RiderProfileScalarFieldEnum)[keyof typeof RiderProfileScalarFieldEnum]
 
 
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
 export const MerchantProfileScalarFieldEnum = {
   id: 'id',
   businessName: 'businessName',
@@ -104,6 +121,74 @@ export const MerchantProfileScalarFieldEnum = {
 } as const
 
 export type MerchantProfileScalarFieldEnum = (typeof MerchantProfileScalarFieldEnum)[keyof typeof MerchantProfileScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  currency: 'currency',
+  amount: 'amount',
+  paymentGateway: 'paymentGateway',
+  merchantInvoiceNumber: 'merchantInvoiceNumber',
+  bkashPaymentId: 'bkashPaymentId',
+  bkashTrxId: 'bkashTrxId',
+  payerReference: 'payerReference',
+  paidAt: 'paidAt',
+  gatewayResponse: 'gatewayResponse',
+  refundTrxId: 'refundTrxId',
+  refundAmount: 'refundAmount',
+  refundReason: 'refundReason',
+  refundAt: 'refundAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  shipmentId: 'shipmentId'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const ShipmentScalarFieldEnum = {
+  id: 'id',
+  trackingId: 'trackingId',
+  merchantId: 'merchantId',
+  riderId: 'riderId',
+  senderName: 'senderName',
+  senderPhone: 'senderPhone',
+  senderAddress: 'senderAddress',
+  recipientName: 'recipientName',
+  recipientPhone: 'recipientPhone',
+  recipientAddress: 'recipientAddress',
+  parcelType: 'parcelType',
+  parcelDescription: 'parcelDescription',
+  weight: 'weight',
+  deliveryFee: 'deliveryFee',
+  codAmount: 'codAmount',
+  status: 'status',
+  assignedAt: 'assignedAt',
+  pickedUpAt: 'pickedUpAt',
+  deliveredAt: 'deliveredAt',
+  deliveryFailedAt: 'deliveryFailedAt',
+  failureReason: 'failureReason',
+  cancelledAt: 'cancelledAt',
+  cancellationReason: 'cancellationReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ShipmentScalarFieldEnum = (typeof ShipmentScalarFieldEnum)[keyof typeof ShipmentScalarFieldEnum]
+
+
+export const TrackingEventScalarFieldEnum = {
+  id: 'id',
+  shipmentId: 'shipmentId',
+  status: 'status',
+  location: 'location',
+  description: 'description',
+  updatedBy: 'updatedBy',
+  createdAt: 'createdAt'
+} as const
+
+export type TrackingEventScalarFieldEnum = (typeof TrackingEventScalarFieldEnum)[keyof typeof TrackingEventScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {
@@ -136,6 +221,14 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -150,4 +243,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

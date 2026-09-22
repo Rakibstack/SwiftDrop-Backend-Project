@@ -17,8 +17,8 @@ router.patch(
 );
 router.patch(
   "/merchant-profile",
-  validationRequest(updateMerchantProfileSchema),
   auth(UserRole.MERCHANT),
+  validationRequest(updateMerchantProfileSchema),
   userController.updateMerchantProfile,
 );
 router.get(
