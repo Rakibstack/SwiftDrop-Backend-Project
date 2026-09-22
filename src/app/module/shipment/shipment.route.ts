@@ -14,5 +14,15 @@ router.post(
   auth(UserRole.MERCHANT),
   shipmentController.createShipment,
 );
+router.get(
+  "/",
+  auth(UserRole.MERCHANT),
+  shipmentController.getAllShipment,
+);
+router.get(
+  "/:shipmentId",
+  auth(UserRole.MERCHANT),
+  shipmentController.getSingleShipment,
+);
 
 export const ShipmentRouter = router;

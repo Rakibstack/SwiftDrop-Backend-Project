@@ -91,10 +91,119 @@ const createShipment = async (
 
   return result;
 };
+const getAllShipment = async (query: IQuery, user: requestUser) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
 
+  const addConditions: ShipmentScalarWhereInput[] = [];
+
+  const isUserExist = await prisma.user.findUnique({
+    where: { id: user.userId },
+    include: {
+      merchantProfile: true,
+    },
+  });
+
+  if (!isUserExist) {
+    throw new AppError(httpstatus.NOT_FOUND, "user  Not Found");
+  }
+
+  //searcing
+  if (query.searchTerm) {
+    addConditions.push({
+      OR: [
+        {
+          recipientName: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          recipientAddress: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          recipientPhone: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  if (query.status) {
+    addConditions.push({
+      status: query.vehicleType as ShipmentStatus,
+    });
+  }
+  addConditions.push({
+    merchantId: isUserExist.merchantProfile?.id,
+  });
+
+  const totalShipment = await prisma.shipment.count({
+    where: {
+      AND: addConditions,
+    },
+  });
+  const allShipment = await prisma.shipment.findMany({
+    where: {
+      AND: addConditions,
+    },
+    take: limit,
+    skip: skip,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      trackingEvents: true,
+    },
+  });
+  return {
+    data: allShipment,
+    meta: {
+      page: page,
+      limit: limit,
+      total: totalShipment,
+      totalPages: Math.ceil(totalShipment / limit),
+    },
+  };
+};
+const getSingleShipment = async (shipmentId: string, user: requestUser) => {
+
+  const isUserExist = await prisma.user.findUnique({
+    where: { id: user.userId },
+    include: {
+      merchantProfile: true,
+    },
+  });
+
+  if (!isUserExist) {
+    throw new AppError(httpstatus.NOT_FOUND, "user  Not Found");
+  }
+  
+  const singleShipment = await prisma.shipment.findUnique({
+    where: {
+      id: shipmentId,
+      merchantId: isUserExist.merchantProfile?.id,
+    },
+    include: {
+      trackingEvents: true,
+    },
+  });
+
+  if (!singleShipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Shipment Not Found");
+  }
+
+  return singleShipment;
+};
 
 export const shipmentService = {
   createShipment,
   getAllShipment,
-  getSingleShipment
+  getSingleShipment,
 };
