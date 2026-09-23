@@ -1,8 +1,8 @@
 
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import httpstatus from "http-status";
 import { shipmentService } from "./shipment.service";
-import { requestUser } from "../../middleware/checkAuth";
+import type { requestUser } from "../../middleware/checkAuth";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 

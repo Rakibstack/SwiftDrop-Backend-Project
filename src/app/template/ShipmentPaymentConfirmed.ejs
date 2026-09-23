@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Shipment Confirmed - SwiftDrop</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f9;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .header {
+      background-color: #0f766e;
+      padding: 28px 30px;
+      text-align: center;
+    }
+
+    .logo {
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .header-text {
+      color: #d1fae5;
+      font-size: 14px;
+      margin: 8px 0 0;
+    }
+
+    .content {
+      padding: 35px 30px;
+    }
+
+    .success-icon {
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background-color: #dcfce7;
+      color: #15803d;
+      text-align: center;
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    h1 {
+      margin: 0 0 15px;
+      text-align: center;
+      font-size: 24px;
+      color: #111827;
+    }
+
+    .intro {
+      text-align: center;
+      color: #4b5563;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .details {
+      margin-top: 28px;
+      padding: 20px;
+      background-color: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+
+    .detail-row {
+      display: table;
+      width: 100%;
+      padding: 9px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .label,
+    .value {
+      display: table-cell;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    .label {
+      width: 42%;
+      color: #6b7280;
+    }
+
+    .value {
+      color: #111827;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .status {
+      color: #15803d;
+    }
+
+    .message {
+      margin-top: 25px;
+      padding: 16px;
+      background-color: #ecfdf5;
+      border-left: 4px solid #10b981;
+      border-radius: 6px;
+      color: #065f46;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      padding: 22px 30px;
+      background-color: #f8fafc;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .footer strong {
+      color: #374151;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container">
+
+```
+<div class="header">
+  <h2 class="logo">SwiftDrop</h2>
+  <p class="header-text">Merchant-Focused Courier & Logistics Platform</p>
+</div>
+
+<div class="content">
+
+  <div class="success-icon">✓</div>
+
+  <h1>Shipment Confirmed Successfully</h1>
+
+  <p class="intro">
+    Hello <strong><%= merchantName %></strong>,
+    <br />
+    your shipment payment has been successfully confirmed.
+    Your shipment is now ready for the next stage of delivery.
+  </p>
+
+  <div class="details">
+
+    <div class="detail-row">
+      <span class="label">Tracking ID</span>
+      <span class="value"><%= trackingId %></span>
+    </div>
+
+    <div class="detail-row">
+      <span class="label">Recipient</span>
+      <span class="value"><%= recipientName %></span>
+    </div>
+
+    <div class="detail-row">
+      <span class="label">Delivery Fee</span>
+      <span class="value">৳ <%= deliveryFee %></span>
+    </div>
+
+    <div class="detail-row">
+      <span class="label">Payment Status</span>
+      <span class="value status">PAID</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="label">Shipment Status</span>
+      <span class="value status">PAYMENT CONFIRMED</span>
+    </div>
+
+  </div>
+
+  <div class="message">
+    <strong>What's next?</strong><br />
+    Our operations team will assign a rider to your shipment.
+    You can use the tracking ID to monitor your shipment progress.
+  </div>
+
+</div>
+
+<div class="footer">
+  <strong>SwiftDrop</strong><br />
+  Reliable delivery. Simple logistics.<br /><br />
+  This is an automated email. Please do not reply to this message.
+</div>
+```
+
+  </div>
+</body>
+</html>

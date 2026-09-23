@@ -13,5 +13,9 @@ route.post(
   auth(UserRole.MERCHANT),
   paymentController.initiateShipmentPayment,
 );
+route.get(
+  "/bkash/payment/callback",
+  paymentController.initiateShipmentPaymentCallback,
+);
 
 export const PaymentRoutes = route

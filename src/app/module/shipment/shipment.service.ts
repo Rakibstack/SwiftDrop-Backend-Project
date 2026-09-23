@@ -1,12 +1,12 @@
 import httpstatus from "http-status";
 import { ShipmentStatus } from "../../../generated/prisma/enums";
-import { ICreateShipmentPayload } from "./shipment.validation";
-import { requestUser } from "../../middleware/checkAuth";
+import type { ICreateShipmentPayload } from "./shipment.validation";
+import type { requestUser } from "../../middleware/checkAuth";
 import { prisma } from "../../lib/prisma";
 import AppError from "../../utils/AppError";
 import { calculateDeliveryFee } from "./shipment.utils";
-import { IQuery } from "../../interface";
-import { ShipmentScalarWhereInput } from "../../../generated/prisma/models";
+import type { IQuery } from "../../interface";
+import type { ShipmentScalarWhereInput } from "../../../generated/prisma/models";
 
 const generateTrackingId = (): string => {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
