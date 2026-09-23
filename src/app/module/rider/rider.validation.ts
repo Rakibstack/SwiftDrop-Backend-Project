@@ -41,7 +41,6 @@ export const applyAsRiderSchema = z.object({
 export type IApplyAsRiderPayload = z.infer<typeof applyAsRiderSchema>;
 
 
-
 export const verifyEmailSchema = z.object({
   email: z
     .string()
@@ -119,4 +118,32 @@ export const updateRiderProfileSchema = z.object({
 
 export type IUpdateRiderProfilePayload = z.infer<
   typeof updateRiderProfileSchema
+>;
+
+export const riderShipmentQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+
+  limit: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(100)
+    .default(10),
+
+  status: z
+    .enum([
+      "ASSIGNED",
+      "ACCEPTED",
+      "PICKED_UP",
+      "IN_TRANSIT",
+      "OUT_FOR_DELIVERY",
+      "DELIVERED",
+      "DELIVERY_FAILED",
+      "RETURNED",
+    ])
+    .optional(),
+});
+
+export type IRiderShipmentQuery = z.infer<
+  typeof riderShipmentQuerySchema
 >;

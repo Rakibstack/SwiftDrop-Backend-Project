@@ -1,4 +1,3 @@
-
 import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
@@ -8,6 +7,7 @@ import httpstatus from "http-status";
 import type {
   IApplyAsRiderPayload,
   IReviewRiderPayload,
+  IRiderShipmentQuery,
   IUpdateRiderProfilePayload,
   IVerifyEmailPayload,
 } from "./rider.validation";
@@ -15,10 +15,19 @@ import transporter from "../../lib/nodemailer";
 import redisClient from "../../lib/redis";
 import path from "path";
 import ejs from "ejs";
-import { RiderStatus, UserRole, type VehicleType } from "../../../generated/prisma/enums";
+import {
+  RiderStatus,
+  ShipmentStatus,
+  UserRole,
+  UserStatus,
+  type VehicleType,
+} from "../../../generated/prisma/enums";
 import type { requestUser } from "../../middleware/checkAuth";
 import type { IQuery } from "../../interface";
-import type { RiderProfileWhereInput } from "../../../generated/prisma/models";
+import type {
+  RiderProfileWhereInput,
+  ShipmentWhereInput,
+} from "../../../generated/prisma/models";
 
 const applyAsRider = async (payload: IApplyAsRiderPayload) => {
   const isUserExist = await prisma.user.findUnique({
@@ -203,7 +212,7 @@ const approveRider = async (
       : "Update on Your SwiftDrop Rider Application",
     html,
   });
-  return updateRider
+  return updateRider;
 };
 
 const getAllRiders = async (query: IQuery) => {
@@ -240,39 +249,39 @@ const getAllRiders = async (query: IQuery) => {
     });
   }
 
-// Vehicle Type - Enum
-if (query.vehicleType) {
-  addConditions.push({
-    vehicleType: query.vehicleType as VehicleType,
-  });
-}
+  // Vehicle Type - Enum
+  if (query.vehicleType) {
+    addConditions.push({
+      vehicleType: query.vehicleType as VehicleType,
+    });
+  }
 
-// Address - String
-if (query.address) {
-  addConditions.push({
-    address: {
-      contains: query.address,
-      mode: "insensitive",
-    },
-  });
-}
+  // Address - String
+  if (query.address) {
+    addConditions.push({
+      address: {
+        contains: query.address,
+        mode: "insensitive",
+      },
+    });
+  }
 
-// License Number - String
-if (query.licenseNumber) {
-  addConditions.push({
-    licenseNumber: {
-      equals: query.licenseNumber,
-      mode: "insensitive",
-    },
-  });
-}
+  // License Number - String
+  if (query.licenseNumber) {
+    addConditions.push({
+      licenseNumber: {
+        equals: query.licenseNumber,
+        mode: "insensitive",
+      },
+    });
+  }
 
-// Rider Status - Enum
-if (query.status) {
-  addConditions.push({
-    status: query.status as RiderStatus,
-  });
-}
+  // Rider Status - Enum
+  if (query.status) {
+    addConditions.push({
+      status: query.status as RiderStatus,
+    });
+  }
   addConditions.push({
     isSuspended: false,
   });
@@ -327,7 +336,7 @@ const getSingleRider = async (riderId: string) => {
     throw new AppError(httpstatus.NOT_FOUND, "Single Rider Not Found");
   }
 
-  return singleRider
+  return singleRider;
 };
 
 const updateRiderProfile = async (
@@ -349,6 +358,112 @@ const updateRiderProfile = async (
 
   return updatedRider;
 };
+const getMyAssignedShipments = async (query: IQuery, user: requestUser) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  if (rider.user.isDeleted) {
+    throw new AppError(httpstatus.FORBIDDEN, "This account has been deleted.");
+  }
+
+  if (rider.user.status === UserStatus.SUSPENDED) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "This rider account is suspended.",
+    );
+  }
+
+  if (rider.status !== RiderStatus.ACTIVE) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "Only active riders can access assigned shipments.",
+    );
+  }
+
+  const conditions: ShipmentWhereInput[] = [
+    {
+      riderId: rider.id,
+    },
+  ];
+
+  if (query.status) {
+    conditions.push({
+      status: query.status as ShipmentStatus,
+    });
+  }
+
+  const totalShipment = await prisma.shipment.count({
+    where: {
+      AND: conditions,
+    },
+  });
+
+  const shipments = await prisma.shipment.findMany({
+    where: {
+      AND: conditions,
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      trackingId: true,
+
+      senderName: true,
+      senderPhone: true,
+      senderAddress: true,
+
+      recipientName: true,
+      recipientPhone: true,
+      recipientAddress: true,
+
+      parcelType: true,
+      parcelDescription: true,
+      weight: true,
+
+      codAmount: true,
+      deliveryFee: true,
+
+      status: true,
+
+      assignedAt: true,
+      pickedUpAt: true,
+      deliveredAt: true,
+      deliveryFailedAt: true,
+
+      failureReason: true,
+
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    data: shipments,
+    meta: {
+      page,
+      limit,
+      total: totalShipment,
+      totalPages: Math.ceil(totalShipment / limit),
+    },
+  };
+};
 
 export const riderService = {
   applyAsRider,
@@ -356,5 +471,6 @@ export const riderService = {
   approveRider,
   getAllRiders,
   getSingleRider,
-  updateRiderProfile
+  updateRiderProfile,
+  getMyAssignedShipments,
 };

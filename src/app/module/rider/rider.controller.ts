@@ -4,6 +4,7 @@ import { riderService } from "./rider.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import type { requestUser } from "../../middleware/checkAuth";
+import { assignRiderSchema } from "../shipment/shipment.validation";
 
 const applyAsRider = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -96,6 +97,21 @@ const updateRiderProfile = catchAsync(
     });
   },
 );
+const getMyAssignedShipments = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await riderService.getMyAssignedShipments(
+      req.query,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Assigned Shipments Retrieved Successfully",
+      data: result,
+    });
+  },
+);
 
 export const riderController = {
   applyAsRider,
@@ -104,4 +120,5 @@ export const riderController = {
   getAllRiders,
   getSingleRider,
   updateRiderProfile,
+  getMyAssignedShipments
 };
