@@ -5,10 +5,13 @@ import { prisma } from "../../lib/prisma";
 import type { requestUser } from "../../middleware/checkAuth";
 import AppError from "../../utils/AppError";
 import httpstatus from "http-status";
-import type { IShipmentIdPayload } from "./payment.validation";
+import type {
+  ICancelShipmentPayload,
+  IShipmentIdPayload,
+} from "./payment.validation";
 import transporter from "../../lib/nodemailer";
 import path from "path";
-import ejs from "ejs"
+import ejs from "ejs";
 
 const initiateShipmentPayment = async (
   payload: IShipmentIdPayload,
@@ -181,7 +184,6 @@ const initiateShipmentPaymentCallback = async (query: Record<string, any>) => {
         );
       }
       const executePaymentResult = await executePaymentResponse.json();
-      
 
       if (status === "success") {
         const payment = await prisma.payment.findUnique({
@@ -310,7 +312,211 @@ const initiateShipmentPaymentCallback = async (query: Record<string, any>) => {
   return transactionResult;
 };
 
+const cancelShipment = async (
+  shipmentId : string,
+  payload: ICancelShipmentPayload,
+  user: requestUser,
+) => {
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    const shipment = await tx.shipment.findFirst({
+      where: {
+        id: shipmentId,
+        merchant: {
+          userId: user.userId,
+        },
+      },
+      include: {
+        payments: {
+          where: {
+            status: PaymentStatus.PAID,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!shipment) {
+      throw new AppError(httpstatus.NOT_FOUND, "Shipment not found.");
+    }
+
+    const cancellableStatuses: ShipmentStatus[] = [
+      ShipmentStatus.PAYMENT_PENDING,
+      ShipmentStatus.PAYMENT_CONFIRMED,
+    ];
+
+    if (!cancellableStatuses.includes(shipment.status)) {
+      throw new AppError(
+        httpstatus.CONFLICT,
+        `Shipment cannot be cancelled after ${shipment.status}.`,
+      );
+    }
+
+    if (shipment.status === ShipmentStatus.PAYMENT_PENDING) {
+      const cancelledShipment = await tx.shipment.update({
+        where: {
+          id: shipment.id,
+        },
+        data: {
+          status: ShipmentStatus.CANCELLED,
+          cancelledAt: new Date(),
+          cancellationReason: payload.reason,
+        },
+      });
+
+      await tx.trackingEvent.create({
+        data: {
+          shipmentId: shipment.id,
+          status: ShipmentStatus.CANCELLED,
+          description: `Shipment cancelled by merchant. Reason: ${payload.reason}`,
+          updatedBy: user.userId,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId: user.userId,
+          action: "SHIPMENT_CANCELLED",
+          entity: "SHIPMENT",
+          entityId: shipment.id,
+          metadata: {
+            reason: payload.reason,
+            previousStatus: ShipmentStatus.PAYMENT_PENDING,
+          },
+        },
+      });
+
+      return {
+        shipment: cancelledShipment,
+        payment: null,
+      };
+    }
+    const paidPayment = shipment.payments[0];
+
+    if (!paidPayment) {
+      throw new AppError(
+        httpstatus.CONFLICT,
+        "Paid payment record not found for this shipment.",
+      );
+    }
+
+    if (!paidPayment.bkashPaymentId || !paidPayment.bkashTrxId) {
+      throw new AppError(
+        httpstatus.CONFLICT,
+        "Required bKash payment information is missing.",
+      );
+    }
+
+    const bkashIdToken = await getBkashIdToken();
+
+    if (!bkashIdToken) {
+      throw new AppError(
+        httpstatus.BAD_GATEWAY,
+        "bKash access token not found.",
+      );
+    }
+
+    const refundResponse = await fetch(
+      `${config.bkash_base_url}/tokenized/checkout/payment/refund`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: bkashIdToken,
+          "X-App-Key": config.bkash_app_key,
+        },
+        body: JSON.stringify({
+          paymentID: paidPayment.bkashPaymentId,
+          trxID: paidPayment.bkashTrxId,
+          amount: Number(paidPayment.amount),
+          sku: "SWIFTDROP-SHIPMENT",
+          reason: payload.reason,
+        }),
+      },
+    );
+
+    const refundResult = await refundResponse.json();
+
+    if (!refundResponse.ok) {
+      throw new AppError(
+        httpstatus.BAD_GATEWAY,
+        "bKash refund request failed.",
+      );
+    }
+
+    // Verify bKash business-level success
+    if (refundResult.statusCode !== "0000") {
+      throw new AppError(
+        httpstatus.BAD_REQUEST,
+        refundResult.statusMessage || "bKash refund failed.",
+      );
+    }
+
+    const refundAt = new Date();
+
+    const updatedPayment = await tx.payment.update({
+      where: {
+        id: paidPayment.id,
+      },
+      data: {
+        status: PaymentStatus.REFUNDED,
+        refundTrxId: refundResult.refundTrxID,
+        refundAmount: Number(paidPayment.amount),
+        refundAt,
+        refundReason: payload.reason,
+        gatewayResponse: refundResult,
+      },
+    });
+
+    const cancelledShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id,
+      },
+      data: {
+        status: ShipmentStatus.CANCELLED,
+        cancelledAt: refundAt,
+        cancellationReason: payload.reason,
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.CANCELLED,
+        description: `Shipment cancelled and payment refunded. Reason: ${payload.reason}`,
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_CANCELLED",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          reason: payload.reason,
+          previousStatus: ShipmentStatus.PAYMENT_CONFIRMED,
+          paymentId: paidPayment.id,
+          refundTrxId: refundResult.refundTrxID,
+          refundAmount: Number(paidPayment.amount),
+        },
+      },
+    });
+
+    return {
+      shipment: cancelledShipment,
+      payment: updatedPayment,
+    };
+  });
+
+  return transactionResult;
+};
 export const paymentService = {
   initiateShipmentPayment,
   initiateShipmentPaymentCallback,
+  cancelShipment,
 };

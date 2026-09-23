@@ -4,6 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { paymentService } from "./payment.service";
 import type { requestUser } from "../../middleware/checkAuth";
+import { shipmentService } from "../shipment/shipment.service";
 
 const initiateShipmentPayment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -27,8 +28,23 @@ const initiateShipmentPaymentCallback = catchAsync(
     res.redirect(redirectUrl as string);
   },
 );
+const cancelShipment = catchAsync(async (req: Request, res: Response) => {
+  const result = await paymentService.cancelShipment(
+    req.params.shipmentId as string,
+    req.body,
+    req.user as requestUser,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Shipment cancelled successfully.",
+    data: result,
+  });
+});
 
 export const paymentController = {
   initiateShipmentPayment,
   initiateShipmentPaymentCallback,
+  cancelShipment
 };

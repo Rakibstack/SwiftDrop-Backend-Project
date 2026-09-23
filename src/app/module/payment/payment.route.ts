@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { paymentController } from "./payment.controller";
 import { validationRequest } from "../../middleware/validationMiddleware";
-import { shipmentIdSchema } from "./payment.validation";
+import { cancelShipmentSchema, shipmentIdSchema } from "./payment.validation";
 import { auth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
 
@@ -16,6 +16,12 @@ route.post(
 route.get(
   "/bkash/payment/callback",
   paymentController.initiateShipmentPaymentCallback,
+);
+route.post(
+  "/cancel-shipment/:shipmentId",
+  validationRequest(cancelShipmentSchema),
+  auth(UserRole.MERCHANT),
+  paymentController.cancelShipment,
 );
 
 export const PaymentRoutes = route
