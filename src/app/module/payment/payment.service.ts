@@ -12,8 +12,8 @@ import type {
 import transporter from "../../lib/nodemailer";
 import path from "path";
 import ejs from "ejs";
-import { PaymentWhereInput } from "../../../generated/prisma/models";
-import { IQuery } from "../../interface";
+import type { PaymentWhereInput } from "../../../generated/prisma/models";
+import type { IQuery } from "../../interface";
 
 const initiateShipmentPayment = async (
   payload: IShipmentIdPayload,

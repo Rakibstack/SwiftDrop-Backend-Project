@@ -14,13 +14,25 @@ router.post(
   auth(UserRole.MERCHANT),
   shipmentController.createShipment,
 );
+// admin route
 router.get(
-  "/",
+  "/get-all-shipment-admin",
+  auth(UserRole.ADMIN),
+  shipmentController.getAllShipmentAdmin,
+);
+router.get(
+  "/get-single-shipment-admin/:shipmentId",
+  auth(UserRole.ADMIN),
+  shipmentController.getSingleShipmentAdmin,
+);
+// merchant route
+router.get(
+  "/get-all-shipment-merchant",
   auth(UserRole.MERCHANT),
   shipmentController.getAllShipment,
 );
 router.get(
-  "/:shipmentId",
+  "/get-single-shipment-merchant/:shipmentId",
   auth(UserRole.MERCHANT),
   shipmentController.getSingleShipment,
 );

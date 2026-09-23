@@ -7,7 +7,6 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
 
-
 const createShipment = catchAsync(
   async (req: Request, res: Response) => {
     const result = await shipmentService.createShipment(
@@ -23,6 +22,40 @@ const createShipment = catchAsync(
     });
   },
 );
+const getAllShipmentAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const result = await shipmentService.getAllShipmentAdmin(
+      req.query,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.CREATED,
+      message: "Retrieve All Shipment Successfully",
+      data: result,
+    });
+  },
+);
+const getSingleShipmentAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const shipmentId = req.params.shipmentId as string;
+    const result = await shipmentService.getSingleShipmentAdmin(
+      shipmentId,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.CREATED,
+      message: "Retrieve Single Shipment Successfully",
+      data: result,
+    });
+  },
+);
+// merchant 
 const getAllShipment = catchAsync(
   async (req: Request, res: Response) => {
 
@@ -60,5 +93,7 @@ const getSingleShipment = catchAsync(
 export const shipmentController = {
   createShipment,
   getAllShipment,
-  getSingleShipment
+  getSingleShipment,
+  getAllShipmentAdmin,
+  getSingleShipmentAdmin
 };
