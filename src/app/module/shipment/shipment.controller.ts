@@ -22,6 +22,7 @@ const createShipment = catchAsync(
     });
   },
 );
+// admin controller
 const getAllShipmentAdmin = catchAsync(
   async (req: Request, res: Response) => {
 
@@ -55,7 +56,23 @@ const getSingleShipmentAdmin = catchAsync(
     });
   },
 );
-// merchant 
+const assignRider = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await shipmentService.assignRider(
+      req.params.shipmentId as string,
+      req.body,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.OK,
+      message: "Rider Assigned Successfully",
+      data: result,
+    });
+  },
+);
+// merchant controller
 const getAllShipment = catchAsync(
   async (req: Request, res: Response) => {
 
@@ -95,5 +112,6 @@ export const shipmentController = {
   getAllShipment,
   getSingleShipment,
   getAllShipmentAdmin,
-  getSingleShipmentAdmin
+  getSingleShipmentAdmin,
+  assignRider
 };

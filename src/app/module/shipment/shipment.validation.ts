@@ -68,3 +68,9 @@ export const createShipmentSchema = z.object({
 export type ICreateShipmentPayload = z.infer<
   typeof createShipmentSchema
 >;
+
+export const assignRiderSchema = z.object({
+  riderId: z.string().uuid("Invalid rider ID"),
+});
+
+export type IAssignRiderPayload = z.infer<typeof assignRiderSchema>;

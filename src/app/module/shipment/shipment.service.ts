@@ -1,12 +1,23 @@
 import httpstatus from "http-status";
-import { ShipmentStatus, UserRole } from "../../../generated/prisma/enums";
-import type { ICreateShipmentPayload } from "./shipment.validation";
+import {
+  RiderStatus,
+  ShipmentStatus,
+  UserRole,
+  UserStatus,
+} from "../../../generated/prisma/enums";
+import type {
+  IAssignRiderPayload,
+  ICreateShipmentPayload,
+} from "./shipment.validation";
 import type { requestUser } from "../../middleware/checkAuth";
 import { prisma } from "../../lib/prisma";
 import AppError from "../../utils/AppError";
 import { calculateDeliveryFee } from "./shipment.utils";
 import type { IQuery } from "../../interface";
-import type { ShipmentScalarWhereInput, ShipmentWhereInput } from "../../../generated/prisma/models";
+import type {
+  ShipmentScalarWhereInput,
+  ShipmentWhereInput,
+} from "../../../generated/prisma/models";
 
 const generateTrackingId = (): string => {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -92,10 +103,7 @@ const createShipment = async (
   return result;
 };
 // admin only api
-const getAllShipmentAdmin = async (
-  query: IQuery,
-  user: requestUser,
-) => {
+const getAllShipmentAdmin = async (query: IQuery, user: requestUser) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
   const skip = (page - 1) * limit;
@@ -109,10 +117,7 @@ const getAllShipmentAdmin = async (
   });
 
   if (!existingUser) {
-    throw new AppError(
-      httpstatus.NOT_FOUND,
-      "User Not Found",
-    );
+    throw new AppError(httpstatus.NOT_FOUND, "User Not Found");
   }
 
   if (existingUser.role !== UserRole.ADMIN) {
@@ -237,10 +242,7 @@ const getSingleShipmentAdmin = async (
   });
 
   if (!existingUser) {
-    throw new AppError(
-      httpstatus.NOT_FOUND,
-      "User Not Found",
-    );
+    throw new AppError(httpstatus.NOT_FOUND, "User Not Found");
   }
 
   if (existingUser.role !== UserRole.ADMIN) {
@@ -291,13 +293,143 @@ const getSingleShipmentAdmin = async (
   });
 
   if (!singleShipment) {
-    throw new AppError(
-      httpstatus.NOT_FOUND,
-      "Shipment Not Found",
-    );
+    throw new AppError(httpstatus.NOT_FOUND, "Shipment Not Found");
   }
 
   return singleShipment;
+};
+const assignRider = async (
+  shipmentId: string,
+  payload: IAssignRiderPayload,
+  user: requestUser,
+) => {
+  const existingAdmin = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (!existingAdmin) {
+    throw new AppError(httpstatus.NOT_FOUND, "Admin Not Found");
+  }
+
+  if (existingAdmin.role !== UserRole.ADMIN) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "You are not authorized to assign riders.",
+    );
+  }
+
+  const shipment = await prisma.shipment.findUnique({
+    where: {
+      id: shipmentId,
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Shipment Not Found");
+  }
+
+  if (shipment.status !== ShipmentStatus.PAYMENT_CONFIRMED) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Rider cannot be assigned while shipment is ${shipment.status}.`,
+    );
+  }
+
+  if (shipment.riderId) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      "A rider is already assigned to this shipment.",
+    );
+  }
+
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      id: payload.riderId,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Not Found");
+  }
+
+  if (rider.status !== RiderStatus.ACTIVE) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      "Only active riders can be assigned to shipments.",
+    );
+  }
+
+  if (rider.user.isDeleted) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "This rider account has been deleted.",
+    );
+  }
+
+  if (rider.user.status === UserStatus.SUSPENDED) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "This rider account is suspended.",
+    );
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipmentId,
+      },
+      data: {
+        riderId: rider.id,
+        assignedAt: new Date(),
+        status: ShipmentStatus.ASSIGNED,
+      },
+      include: {
+        rider: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.ASSIGNED,
+        description: `Shipment assigned to rider ${rider.user.name}.`,
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "RIDER_ASSIGNED",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          riderId: rider.id,
+          riderName: rider.user.name,
+          trackingId: shipment.trackingId,
+        },
+      },
+    });
+
+    return updatedShipment;
+  });
+
+  return result;
 };
 // merchant only api
 const getAllShipment = async (query: IQuery, user: requestUser) => {
@@ -415,5 +547,6 @@ export const shipmentService = {
   getAllShipment,
   getSingleShipment,
   getAllShipmentAdmin,
-  getSingleShipmentAdmin
+  getSingleShipmentAdmin,
+  assignRider,
 };

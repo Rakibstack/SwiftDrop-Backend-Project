@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { shipmentController } from "./shipment.controller";
-import { createShipmentSchema } from "./shipment.validation";
+import { assignRiderSchema, createShipmentSchema } from "./shipment.validation";
 
 import { UserRole } from "../../../generated/prisma/enums";
 import { auth } from "../../middleware/checkAuth";
@@ -24,6 +24,12 @@ router.get(
   "/get-single-shipment-admin/:shipmentId",
   auth(UserRole.ADMIN),
   shipmentController.getSingleShipmentAdmin,
+);
+router.patch(
+  "/:shipmentId/assign-rider",
+  validationRequest(assignRiderSchema),
+  auth(UserRole.ADMIN),
+  shipmentController.assignRider,
 );
 // merchant route
 router.get(

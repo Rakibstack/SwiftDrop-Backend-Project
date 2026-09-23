@@ -327,7 +327,10 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
   if (isForgotUserExist.status === "SUSPENDED") {
     throw new AppError(httpstatus.FORBIDDEN, "User is Suspended");
   }
-  if (isForgotUserExist.isDeleted || isForgotUserExist.status === "DELETED") {
+  if (isForgotUserExist.status !== "ACTIVE") {
+    throw new AppError(httpstatus.FORBIDDEN, "User is Suspended");
+  }
+  if (isForgotUserExist.isDeleted ) {
     throw new AppError(httpstatus.NOT_FOUND, "User Is Deleted");
   }
   if (
