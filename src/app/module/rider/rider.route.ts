@@ -41,6 +41,31 @@ router.get(
   auth(UserRole.RIDER),
   riderController.getMyAssignedShipments,
 );
+router.patch(
+  "/shipments/:shipmentId/accept",
+  auth(UserRole.RIDER),
+  riderController.acceptShipment,
+);
+router.patch(
+  "/shipments/:shipmentId/pickup",
+  auth(UserRole.RIDER),
+  riderController.pickupShipment,
+);
+router.patch(
+  "/shipments/:shipmentId/markInTransit",
+  auth(UserRole.RIDER),
+  riderController.markInTransit,
+);
+router.patch(
+  "/shipments/:shipmentId/outForDelivery",
+  auth(UserRole.RIDER),
+  riderController.outForDelivery,
+);
+router.patch(
+  "/shipments/:shipmentId/deliverShipment",
+  auth(UserRole.RIDER),
+  riderController.deliverShipment,
+);
 router.get(
   "/:riderId",
   auth(UserRole.ADMIN),

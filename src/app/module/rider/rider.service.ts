@@ -7,7 +7,6 @@ import httpstatus from "http-status";
 import type {
   IApplyAsRiderPayload,
   IReviewRiderPayload,
-  IRiderShipmentQuery,
   IUpdateRiderProfilePayload,
   IVerifyEmailPayload,
 } from "./rider.validation";
@@ -464,6 +463,338 @@ const getMyAssignedShipments = async (query: IQuery, user: requestUser) => {
     },
   };
 };
+const acceptShipment = async (shipmentId: string, user: requestUser) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  if (rider.status !== RiderStatus.ACTIVE) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "Only active riders can accept shipments.",
+    );
+  }
+
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id,
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+
+  if (shipment.status !== ShipmentStatus.ASSIGNED) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Shipment cannot be accepted while it is ${shipment.status}.`,
+    );
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id,
+      },
+      data: {
+        status: ShipmentStatus.ACCEPTED,
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.ACCEPTED,
+        description: "Rider accepted the shipment.",
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_ACCEPTED",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id,
+        },
+      },
+    });
+
+    return updatedShipment;
+  });
+
+  return result;
+};
+
+const pickupShipment = async (shipmentId: string, user: requestUser) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id,
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+
+  if (shipment.status !== ShipmentStatus.ACCEPTED) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Shipment cannot be picked up while it is ${shipment.status}.`,
+    );
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id,
+      },
+      data: {
+        status: ShipmentStatus.PICKED_UP,
+        pickedUpAt: new Date(),
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.PICKED_UP,
+        description: "Shipment picked up by rider.",
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_PICKED_UP",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id,
+        },
+      },
+    });
+
+    return updatedShipment;
+  });
+};
+const markInTransit = async (shipmentId: string, user: requestUser) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id,
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+
+  if (shipment.status !== ShipmentStatus.PICKED_UP) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Shipment cannot move to transit while it is ${shipment.status}.`,
+    );
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id,
+      },
+      data: {
+        status: ShipmentStatus.IN_TRANSIT,
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.IN_TRANSIT,
+        description: "Shipment is now in transit.",
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_IN_TRANSIT",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id,
+        },
+      },
+    });
+
+    return updatedShipment;
+  });
+};
+const outForDelivery = async (shipmentId: string, user: requestUser) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id,
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+
+  if (shipment.status !== ShipmentStatus.IN_TRANSIT) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Shipment cannot be marked out for delivery while it is ${shipment.status}.`,
+    );
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id,
+      },
+      data: {
+        status: ShipmentStatus.OUT_FOR_DELIVERY,
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Shipment is out for delivery.",
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_OUT_FOR_DELIVERY",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id,
+        },
+      },
+    });
+
+    return updatedShipment;
+  });
+};
+const deliverShipment = async (shipmentId: string, user: requestUser) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(httpstatus.NOT_FOUND, "Rider Profile Not Found");
+  }
+
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id,
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+
+  if (shipment.status !== ShipmentStatus.OUT_FOR_DELIVERY) {
+    throw new AppError(
+      httpstatus.CONFLICT,
+      `Shipment cannot be marked out for delivery while it is ${shipment.status}.`,
+    );
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id,
+      },
+      data: {
+        status: ShipmentStatus.DELIVERED,
+        deliveredAt: new Date(),
+      },
+    });
+
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.DELIVERED,
+        description: "Shipment delivered successfully.",
+        updatedBy: user.userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_DELIVERED",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id,
+        },
+      },
+    });
+
+    return updatedShipment;
+  });
+};
 
 export const riderService = {
   applyAsRider,
@@ -473,4 +804,7 @@ export const riderService = {
   getSingleRider,
   updateRiderProfile,
   getMyAssignedShipments,
+  acceptShipment,
+  pickupShipment,markInTransit,
+  outForDelivery,deliverShipment
 };

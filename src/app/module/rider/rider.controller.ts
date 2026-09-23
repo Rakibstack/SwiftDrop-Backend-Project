@@ -4,7 +4,6 @@ import { riderService } from "./rider.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import type { requestUser } from "../../middleware/checkAuth";
-import { assignRiderSchema } from "../shipment/shipment.validation";
 
 const applyAsRider = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -112,6 +111,81 @@ const getMyAssignedShipments = catchAsync(
     });
   },
 );
+const acceptShipment = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await riderService.acceptShipment(
+      req.params.shipmentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Shipment Accepted Successfully",
+      data: result,
+    });
+  },
+);
+const pickupShipment = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await riderService.pickupShipment(
+      req.params.shipmentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Shipment Picked Up Successfully",
+      data: result,
+    });
+  },
+);
+const markInTransit = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await riderService.markInTransit(
+      req.params.shipmentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Shipment Transit Up Successfully",
+      data: result,
+    });
+  },
+);
+const outForDelivery = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await riderService.outForDelivery(
+      req.params.shipmentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Shipment Out For Delivery Successfully",
+      data: result,
+    });
+  },
+);
+const deliverShipment = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await riderService.deliverShipment(
+      req.params.shipmentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Shipment  Delivery Successfully",
+      data: result,
+    });
+  },
+);
 
 export const riderController = {
   applyAsRider,
@@ -120,5 +194,8 @@ export const riderController = {
   getAllRiders,
   getSingleRider,
   updateRiderProfile,
-  getMyAssignedShipments
+  getMyAssignedShipments,
+  acceptShipment,pickupShipment,
+  markInTransit,outForDelivery,
+  deliverShipment
 };
