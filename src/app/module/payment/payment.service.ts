@@ -1,4 +1,4 @@
-import { PaymentStatus, ShipmentStatus } from "../../../generated/prisma/enums";
+import { PaymentStatus, ShipmentStatus, UserRole } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { getBkashIdToken } from "../../lib/bkash";
 import { prisma } from "../../lib/prisma";
@@ -12,6 +12,8 @@ import type {
 import transporter from "../../lib/nodemailer";
 import path from "path";
 import ejs from "ejs";
+import { PaymentWhereInput } from "../../../generated/prisma/models";
+import { IQuery } from "../../interface";
 
 const initiateShipmentPayment = async (
   payload: IShipmentIdPayload,
@@ -313,7 +315,7 @@ const initiateShipmentPaymentCallback = async (query: Record<string, any>) => {
 };
 
 const cancelShipment = async (
-  shipmentId : string,
+  shipmentId: string,
   payload: ICancelShipmentPayload,
   user: requestUser,
 ) => {
@@ -515,8 +517,120 @@ const cancelShipment = async (
 
   return transactionResult;
 };
+
+
+// merchant only api
+const getAllPaymentMerchant = async (query: IQuery, user: requestUser) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+
+  const addConditions: PaymentWhereInput[] = [];
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+    include: {
+      merchantProfile: true,
+    },
+  });
+
+  if (!existingUser) {
+    throw new AppError(httpstatus.NOT_FOUND, "User Not Found");
+  }
+
+  if (!existingUser.merchantProfile) {
+    throw new AppError(httpstatus.NOT_FOUND, "Merchant Profile Not Found");
+  }
+
+  addConditions.push({
+    shipment: {
+      merchantId: existingUser.merchantProfile.id,
+    },
+  });
+
+  const totalPayment = await prisma.payment.count({
+    where: {
+      AND: addConditions,
+    },
+  });
+
+  const allPayment = await prisma.payment.findMany({
+    where: {
+      AND: addConditions,
+    },
+    take: limit,
+    skip: skip,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      shipment: {
+        select: {
+          id: true,
+          trackingId: true,
+          recipientName: true,
+          recipientPhone: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  return {
+    data: allPayment,
+    meta: {
+      page,
+      limit,
+      total: totalPayment,
+      totalPages: Math.ceil(totalPayment / limit),
+    },
+  };
+};
+const getSinglePaymentMerchant = async (paymentId: string, user: requestUser) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: { id: user.userId },
+    include: {
+      merchantProfile: true,
+    },
+  });
+
+  if (!isUserExist) {
+    throw new AppError(httpstatus.NOT_FOUND, "user  Not Found");
+  }
+  if (!isUserExist.merchantProfile) {
+  throw new AppError(
+    httpstatus.NOT_FOUND,
+    "Merchant Profile Not Found",
+  );
+}
+
+  const singlePayment = await prisma.payment.findUnique({
+    where: {
+      id: paymentId,
+      shipment: {
+        merchantId: isUserExist.merchantProfile?.id,
+      },
+    },
+    include: {
+      shipment: true,
+    },
+  });
+
+  if (!singlePayment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Payment Not Found");
+  }
+
+  return singlePayment;
+};
 export const paymentService = {
   initiateShipmentPayment,
   initiateShipmentPaymentCallback,
   cancelShipment,
+  getAllPaymentsAdmin,
+  getSinglePaymentAdmin,
+  getAllPaymentMerchant,
+  getSinglePaymentMerchant
+
 };

@@ -43,8 +43,75 @@ const cancelShipment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+const getAllPaymentMerchan = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await paymentService.getAllPaymentMerchant(
+      req.query,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Retrieved All Payment History Successfully",
+      data: result,
+    });
+  },
+);
+const getSinglePaymentMerchant = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await paymentService.getSinglePaymentMerchant(
+      req.params.paymentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Payment Retrieved Successfully",
+      data: result,
+    });
+  },
+);
+
+const getAllPaymentAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await paymentService.getAllPaymentsAdmin(
+      req.query,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Retrieved All Payment History Successfully",
+      data: result,
+    });
+  },
+);
+const getSinglePaymentAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await paymentService.getSinglePaymentAdmin(
+      req.params.paymentId as string,
+      req.user as requestUser,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Payment Retrieved Successfully",
+      data: result,
+    });
+  },
+);
+
 export const paymentController = {
   initiateShipmentPayment,
   initiateShipmentPaymentCallback,
-  cancelShipment
+  cancelShipment,
+  getAllPaymentAdmin,
+  getSinglePaymentAdmin,
+  getAllPaymentMerchan,
+  getSinglePaymentMerchant
 };
