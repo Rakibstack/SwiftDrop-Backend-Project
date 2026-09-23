@@ -518,7 +518,166 @@ const cancelShipment = async (
   return transactionResult;
 };
 
+// addmin only api
+const getAllPaymentsAdmin = async (
+  query: IQuery,
+  user: requestUser,
+) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
 
+  const addConditions: PaymentWhereInput[] = [];
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (!existingUser) {
+    throw new AppError(
+      httpstatus.NOT_FOUND,
+      "User Not Found",
+    );
+  }
+
+  if (existingUser.role !== UserRole.ADMIN) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "You are not authorized to access payment records.",
+    );
+  }
+
+  if (query.status) {
+    addConditions.push({
+      status: query.status as PaymentStatus,
+    });
+  }
+
+  const totalPayment = await prisma.payment.count({
+    where: {
+      AND: addConditions,
+    },
+  });
+
+  const allPayment = await prisma.payment.findMany({
+    where: {
+      AND: addConditions,
+    },
+    take: limit,
+    skip,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      shipment: {
+        select: {
+          id: true,
+          trackingId: true,
+          recipientName: true,
+          recipientPhone: true,
+          status: true,
+          merchant: {
+            select: {
+              businessName: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return {
+    data: allPayment,
+    meta: {
+      page,
+      limit,
+      total: totalPayment,
+      totalPages: Math.ceil(totalPayment / limit),
+    },
+  };
+};
+const getSinglePaymentAdmin = async (
+  paymentId: string,
+  user: requestUser,
+) => {
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (!existingUser) {
+    throw new AppError(
+      httpstatus.NOT_FOUND,
+      "User Not Found",
+    );
+  }
+
+  if (existingUser.role !== UserRole.ADMIN) {
+    throw new AppError(
+      httpstatus.FORBIDDEN,
+      "You are not authorized to access payment records.",
+    );
+  }
+
+  const singlePayment = await prisma.payment.findUnique({
+    where: {
+      id: paymentId,
+    },
+    include: {
+      shipment: {
+        include: {
+          merchant: {
+            select: {
+              id: true,
+              businessName: true,
+              businessPhone: true,
+              businessAddress: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          rider: {
+            select: {
+              id: true,
+              phone: true,
+              vehicleType: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!singlePayment) {
+    throw new AppError(
+      httpstatus.NOT_FOUND,
+      "Payment Not Found",
+    );
+  }
+
+  return singlePayment;
+};
 // merchant only api
 const getAllPaymentMerchant = async (query: IQuery, user: requestUser) => {
   const limit = query.limit ? Number(query.limit) : 10;
