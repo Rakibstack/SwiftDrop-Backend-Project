@@ -38,7 +38,7 @@ export const auth = (...requiredRoles: UserRole[]) => {
     }
 
     const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
-    console.log(verifiedToken,'rider');
+    console.log(verifiedToken,'rider.........');
     
     if (!verifiedToken.success) {
       throw new AppError(httpstatus.UNAUTHORIZED, verifiedToken.error);

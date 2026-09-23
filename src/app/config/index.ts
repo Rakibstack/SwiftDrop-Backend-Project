@@ -1,5 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: <explanation> */
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
+
 import dotenv from "dotenv";
 import path from "node:path";
 

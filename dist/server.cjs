@@ -1207,6 +1207,7 @@ var auth = (...requiredRoles) => {
       );
     }
     const verifiedToken = jwtUtils.verifyToken(token, config_default.jwt_access_secret);
+    console.log(verifiedToken, "rider");
     if (!verifiedToken.success) {
       throw new AppError_default(import_http_status4.default.UNAUTHORIZED, verifiedToken.error);
     }
@@ -1684,6 +1685,20 @@ var updateRiderProfileSchema = import_zod3.z.object({
   }).optional(),
   licenseNumber: import_zod3.z.string().trim().min(5, "License number must be at least 5 characters long").max(50, "License number cannot exceed 50 characters").optional()
 });
+var riderShipmentQuerySchema = import_zod3.z.object({
+  page: import_zod3.z.coerce.number().int().positive().default(1),
+  limit: import_zod3.z.coerce.number().int().positive().max(100).default(10),
+  status: import_zod3.z.enum([
+    "ASSIGNED",
+    "ACCEPTED",
+    "PICKED_UP",
+    "IN_TRANSIT",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "DELIVERY_FAILED",
+    "RETURNED"
+  ]).optional()
+});
 
 // src/app/module/rider/rider.service.ts
 var import_bcryptjs2 = __toESM(require("bcryptjs"), 1);
@@ -1964,13 +1979,396 @@ var updateRiderProfile = async (payload, user) => {
   });
   return updatedRider;
 };
+var getMyAssignedShipments = async (query, user) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId
+    },
+    include: {
+      user: true
+    }
+  });
+  if (!rider) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Rider Profile Not Found");
+  }
+  if (rider.user.isDeleted) {
+    throw new AppError_default(import_http_status9.default.FORBIDDEN, "This account has been deleted.");
+  }
+  if (rider.user.status === UserStatus.SUSPENDED) {
+    throw new AppError_default(
+      import_http_status9.default.FORBIDDEN,
+      "This rider account is suspended."
+    );
+  }
+  if (rider.status !== RiderStatus.ACTIVE) {
+    throw new AppError_default(
+      import_http_status9.default.FORBIDDEN,
+      "Only active riders can access assigned shipments."
+    );
+  }
+  const conditions = [
+    {
+      riderId: rider.id
+    }
+  ];
+  if (query.status) {
+    conditions.push({
+      status: query.status
+    });
+  }
+  const totalShipment = await prisma.shipment.count({
+    where: {
+      AND: conditions
+    }
+  });
+  const shipments = await prisma.shipment.findMany({
+    where: {
+      AND: conditions
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      createdAt: "desc"
+    },
+    select: {
+      id: true,
+      trackingId: true,
+      senderName: true,
+      senderPhone: true,
+      senderAddress: true,
+      recipientName: true,
+      recipientPhone: true,
+      recipientAddress: true,
+      parcelType: true,
+      parcelDescription: true,
+      weight: true,
+      codAmount: true,
+      deliveryFee: true,
+      status: true,
+      assignedAt: true,
+      pickedUpAt: true,
+      deliveredAt: true,
+      deliveryFailedAt: true,
+      failureReason: true,
+      createdAt: true,
+      updatedAt: true
+    }
+  });
+  return {
+    data: shipments,
+    meta: {
+      page,
+      limit,
+      total: totalShipment,
+      totalPages: Math.ceil(totalShipment / limit)
+    }
+  };
+};
+var acceptShipment = async (shipmentId, user) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId
+    }
+  });
+  if (!rider) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Rider Profile Not Found");
+  }
+  if (rider.status !== RiderStatus.ACTIVE) {
+    throw new AppError_default(
+      import_http_status9.default.FORBIDDEN,
+      "Only active riders can accept shipments."
+    );
+  }
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+  if (shipment.status !== ShipmentStatus.ASSIGNED) {
+    throw new AppError_default(
+      import_http_status9.default.CONFLICT,
+      `Shipment cannot be accepted while it is ${shipment.status}.`
+    );
+  }
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id
+      },
+      data: {
+        status: ShipmentStatus.ACCEPTED
+      }
+    });
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.ACCEPTED,
+        description: "Rider accepted the shipment.",
+        updatedBy: user.userId
+      }
+    });
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_ACCEPTED",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id
+        }
+      }
+    });
+    return updatedShipment;
+  });
+  return result;
+};
+var pickupShipment = async (shipmentId, user) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId
+    }
+  });
+  if (!rider) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Rider Profile Not Found");
+  }
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+  if (shipment.status !== ShipmentStatus.ACCEPTED) {
+    throw new AppError_default(
+      import_http_status9.default.CONFLICT,
+      `Shipment cannot be picked up while it is ${shipment.status}.`
+    );
+  }
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id
+      },
+      data: {
+        status: ShipmentStatus.PICKED_UP,
+        pickedUpAt: /* @__PURE__ */ new Date()
+      }
+    });
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.PICKED_UP,
+        description: "Shipment picked up by rider.",
+        updatedBy: user.userId
+      }
+    });
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_PICKED_UP",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id
+        }
+      }
+    });
+    return updatedShipment;
+  });
+};
+var markInTransit = async (shipmentId, user) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId
+    }
+  });
+  if (!rider) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Rider Profile Not Found");
+  }
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+  if (shipment.status !== ShipmentStatus.PICKED_UP) {
+    throw new AppError_default(
+      import_http_status9.default.CONFLICT,
+      `Shipment cannot move to transit while it is ${shipment.status}.`
+    );
+  }
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id
+      },
+      data: {
+        status: ShipmentStatus.IN_TRANSIT
+      }
+    });
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.IN_TRANSIT,
+        description: "Shipment is now in transit.",
+        updatedBy: user.userId
+      }
+    });
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_IN_TRANSIT",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id
+        }
+      }
+    });
+    return updatedShipment;
+  });
+};
+var outForDelivery = async (shipmentId, user) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId
+    }
+  });
+  if (!rider) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Rider Profile Not Found");
+  }
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+  if (shipment.status !== ShipmentStatus.IN_TRANSIT) {
+    throw new AppError_default(
+      import_http_status9.default.CONFLICT,
+      `Shipment cannot be marked out for delivery while it is ${shipment.status}.`
+    );
+  }
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id
+      },
+      data: {
+        status: ShipmentStatus.OUT_FOR_DELIVERY
+      }
+    });
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Shipment is out for delivery.",
+        updatedBy: user.userId
+      }
+    });
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_OUT_FOR_DELIVERY",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id
+        }
+      }
+    });
+    return updatedShipment;
+  });
+};
+var deliverShipment = async (shipmentId, user) => {
+  const rider = await prisma.riderProfile.findUnique({
+    where: {
+      userId: user.userId
+    }
+  });
+  if (!rider) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Rider Profile Not Found");
+  }
+  const shipment = await prisma.shipment.findFirst({
+    where: {
+      id: shipmentId,
+      riderId: rider.id
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status9.default.NOT_FOUND, "Assigned Shipment Not Found");
+  }
+  if (shipment.status !== ShipmentStatus.OUT_FOR_DELIVERY) {
+    throw new AppError_default(
+      import_http_status9.default.CONFLICT,
+      `Shipment cannot be marked out for delivery while it is ${shipment.status}.`
+    );
+  }
+  return await prisma.$transaction(async (tx) => {
+    const updatedShipment = await tx.shipment.update({
+      where: {
+        id: shipment.id
+      },
+      data: {
+        status: ShipmentStatus.DELIVERED,
+        deliveredAt: /* @__PURE__ */ new Date()
+      }
+    });
+    await tx.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        status: ShipmentStatus.DELIVERED,
+        description: "Shipment delivered successfully.",
+        updatedBy: user.userId
+      }
+    });
+    await tx.auditLog.create({
+      data: {
+        userId: user.userId,
+        action: "SHIPMENT_DELIVERED",
+        entity: "SHIPMENT",
+        entityId: shipment.id,
+        metadata: {
+          trackingId: shipment.trackingId,
+          riderId: rider.id
+        }
+      }
+    });
+    return updatedShipment;
+  });
+};
 var riderService = {
   applyAsRider,
   verifyRiderEmail,
   approveRider,
   getAllRiders,
   getSingleRider,
-  updateRiderProfile
+  updateRiderProfile,
+  getMyAssignedShipments,
+  acceptShipment,
+  pickupShipment,
+  markInTransit,
+  outForDelivery,
+  deliverShipment
 };
 
 // src/app/module/rider/rider.controller.ts
@@ -2054,13 +2452,103 @@ var updateRiderProfile2 = catchAsync(
     });
   }
 );
+var getMyAssignedShipments2 = catchAsync(
+  async (req, res) => {
+    const result = await riderService.getMyAssignedShipments(
+      req.query,
+      req.user
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status10.default.OK,
+      message: "Assigned Shipments Retrieved Successfully",
+      data: result
+    });
+  }
+);
+var acceptShipment2 = catchAsync(
+  async (req, res) => {
+    const result = await riderService.acceptShipment(
+      req.params.shipmentId,
+      req.user
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status10.default.OK,
+      message: "Shipment Accepted Successfully",
+      data: result
+    });
+  }
+);
+var pickupShipment2 = catchAsync(
+  async (req, res) => {
+    const result = await riderService.pickupShipment(
+      req.params.shipmentId,
+      req.user
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status10.default.OK,
+      message: "Shipment Picked Up Successfully",
+      data: result
+    });
+  }
+);
+var markInTransit2 = catchAsync(
+  async (req, res) => {
+    const result = await riderService.markInTransit(
+      req.params.shipmentId,
+      req.user
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status10.default.OK,
+      message: "Shipment Transit Up Successfully",
+      data: result
+    });
+  }
+);
+var outForDelivery2 = catchAsync(
+  async (req, res) => {
+    const result = await riderService.outForDelivery(
+      req.params.shipmentId,
+      req.user
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status10.default.OK,
+      message: "Shipment Out For Delivery Successfully",
+      data: result
+    });
+  }
+);
+var deliverShipment2 = catchAsync(
+  async (req, res) => {
+    const result = await riderService.deliverShipment(
+      req.params.shipmentId,
+      req.user
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status10.default.OK,
+      message: "Shipment  Delivery Successfully",
+      data: result
+    });
+  }
+);
 var riderController = {
   applyAsRider: applyAsRider2,
   verifyRiderEmail: verifyRiderEmail2,
   approveRider: approveRider2,
   getAllRiders: getAllRiders2,
   getSingleRider: getSingleRider2,
-  updateRiderProfile: updateRiderProfile2
+  updateRiderProfile: updateRiderProfile2,
+  getMyAssignedShipments: getMyAssignedShipments2,
+  acceptShipment: acceptShipment2,
+  pickupShipment: pickupShipment2,
+  markInTransit: markInTransit2,
+  outForDelivery: outForDelivery2,
+  deliverShipment: deliverShipment2
 };
 
 // src/app/module/rider/rider.route.ts
@@ -2086,16 +2574,46 @@ router3.get(
   auth(UserRole.ADMIN),
   riderController.getAllRiders
 );
-router3.get(
-  "/:riderId",
-  auth(UserRole.ADMIN),
-  riderController.getSingleRider
-);
 router3.patch(
   "/update-rider-profile",
   auth(UserRole.RIDER),
   validationRequest(updateRiderProfileSchema),
   riderController.updateRiderProfile
+);
+router3.get(
+  "/my-shipments",
+  auth(UserRole.RIDER),
+  riderController.getMyAssignedShipments
+);
+router3.patch(
+  "/shipments/:shipmentId/accept",
+  auth(UserRole.RIDER),
+  riderController.acceptShipment
+);
+router3.patch(
+  "/shipments/:shipmentId/pickup",
+  auth(UserRole.RIDER),
+  riderController.pickupShipment
+);
+router3.patch(
+  "/shipments/:shipmentId/markInTransit",
+  auth(UserRole.RIDER),
+  riderController.markInTransit
+);
+router3.patch(
+  "/shipments/:shipmentId/outForDelivery",
+  auth(UserRole.RIDER),
+  riderController.outForDelivery
+);
+router3.patch(
+  "/shipments/:shipmentId/deliverShipment",
+  auth(UserRole.RIDER),
+  riderController.deliverShipment
+);
+router3.get(
+  "/:riderId",
+  auth(UserRole.ADMIN),
+  riderController.getSingleRider
 );
 var RiderRoutes = router3;
 

@@ -1,7 +1,6 @@
-/** biome-ignore-all assist/source/organizeImports: <explanation> */
 import { Router } from "express";
 import { validationRequest } from "../../middleware/validationMiddleware";
-import { applyAsRiderSchema, reviewRiderSchema, riderShipmentQuerySchema, updateRiderProfileSchema, verifyEmailSchema } from "./rider.validation";
+import { applyAsRiderSchema, reviewRiderSchema,  updateRiderProfileSchema, verifyEmailSchema } from "./rider.validation";
 import { riderController } from "./rider.controller";
 import { auth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";

@@ -4,7 +4,6 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { paymentService } from "./payment.service";
 import type { requestUser } from "../../middleware/checkAuth";
-import { shipmentService } from "../shipment/shipment.service";
 
 const initiateShipmentPayment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
