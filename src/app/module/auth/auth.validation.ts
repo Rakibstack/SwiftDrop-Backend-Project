@@ -59,6 +59,18 @@ export const verifyEmailSchema = z.object({
 
 export type IVerifyEmailPayload = z.infer<typeof verifyEmailSchema>;
 
+export const resendVerificationOtpSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please provide a valid email address"),
+});
+
+export type IResendVerificationOtpPayload = z.infer<
+  typeof resendVerificationOtpSchema
+>;
+
 export const merchantLoginSchema = z.object({
   email: z
     .string()

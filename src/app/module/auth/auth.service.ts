@@ -1,4 +1,3 @@
-
 import { prisma } from "../../lib/prisma";
 import AppError from "../../utils/AppError";
 import httpstatus from "http-status";
@@ -14,6 +13,7 @@ import type {
   IGoogleLoginPayload,
   ILoginUserPayload,
   IMerchantRegisterPayload,
+  IResendVerificationOtpPayload,
   IResetPasswordPayload,
   IVerifyEmailPayload,
 } from "./auth.validation";
@@ -27,6 +27,7 @@ import {
 import type { requestUser } from "../../middleware/checkAuth";
 import googleClient from "../../lib/googleAuth";
 import type { TokenPayload } from "google-auth-library";
+import redis from "../../lib/redis";
 
 const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const {
@@ -189,6 +190,52 @@ const verifyMerchantEmail = async (payload: IVerifyEmailPayload) => {
     refreshToken,
   };
 };
+
+const resendVerificationOtp = async (
+  payload: IResendVerificationOtpPayload,
+) => {
+  const { email } = payload;
+  // Check pending registration
+  const registrationData = await redisClient.get(`merchant-register-data:${email}`);
+  if (!registrationData) {
+    throw new AppError(
+      httpstatus.NOT_FOUND,
+      "No pending registration found for this email. Please register again.",
+    );
+  }
+  const merchantPayload: IMerchantRegisterPayload =
+    JSON.parse(registrationData);
+
+  const expiresInSeconds = 5 * 60;
+  const otpKey = `merchant-register-otp:${email}`;
+  const otpValue = crypto.randomInt(100000, 1000000).toString();
+
+  await redisClient.set(otpKey, otpValue, {
+    expiration: {
+      type: "EX",
+      value: expiresInSeconds,
+    },
+  });
+
+  const templatePath = path.join(
+    process.cwd(),
+    "src/app/template/merchantRegisterOTP.ejs",
+  );
+
+  const html = await ejs.renderFile(templatePath, {
+    name: merchantPayload.name,
+    otpValue,
+    expiresIn: expiresInSeconds / 60,
+    year: new Date().getFullYear(),
+  });
+
+  await transporter.sendMail({
+    from: config.sender_email,
+    to: email,
+    subject: "Email Verification OTP Send.",
+    html,
+  });
+};
 const loginUser = async (payload: ILoginUserPayload) => {
   const user = await prisma.user.findUnique({
     where: { email: payload.email },
@@ -330,7 +377,7 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
   if (isForgotUserExist.status !== "ACTIVE") {
     throw new AppError(httpstatus.FORBIDDEN, "User is Suspended");
   }
-  if (isForgotUserExist.isDeleted ) {
+  if (isForgotUserExist.isDeleted) {
     throw new AppError(httpstatus.NOT_FOUND, "User Is Deleted");
   }
   if (
@@ -572,6 +619,7 @@ export const AuthService = {
   verifyMerchantEmail,
   loginUser,
   getMe,
+  resendVerificationOtp,
   refreshToken,
   forgotPassword,
   resetPassword,

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { AuthController } from "./auth.controller";
 import { validationRequest } from "../../middleware/validationMiddleware";
-import { forgotPasswordSchema, merchantLoginSchema, merchantRegisterSchema, resetPasswordSchema, verifyEmailSchema } from "./auth.validation";
+import { forgotPasswordSchema, merchantLoginSchema, merchantRegisterSchema, resendVerificationOtpSchema, resetPasswordSchema, verifyEmailSchema } from "./auth.validation";
 import { auth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
 
@@ -16,6 +16,11 @@ router.post(
   "/verify-email",
   validationRequest(verifyEmailSchema),
   AuthController.verifyMerchantEmail,
+);
+router.post(
+  "/resend-verification-otp",
+  validationRequest(resendVerificationOtpSchema),
+  AuthController.resendVerificationOtp,
 );
 router.post(
   "/login",

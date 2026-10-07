@@ -1,10 +1,10 @@
-
 import type { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { AuthService } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpstatus from "http-status";
 import AppError from "../../utils/AppError";
+import config from "../../config";
 
 const registerMerchant = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -27,14 +27,14 @@ const verifyMerchantEmail = catchAsync(
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -59,14 +59,14 @@ const loginUser = catchAsync(
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -82,6 +82,19 @@ const loginUser = catchAsync(
   },
 );
 
+const resendVerificationOtp = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload = req.body;
+
+    await AuthService.resendVerificationOtp(payload);
+    sendResponse(res, {
+      statusCode: httpstatus.OK,
+      success: true,
+      message: "Verification OTP resent successfully",
+      data: null,
+    });
+  },
+);
 const getMe = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
 
@@ -102,7 +115,6 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-
   if (!req.cookies.refreshToken) {
     throw new AppError(httpstatus.BAD_REQUEST, "Refresh token is missing");
   }
@@ -111,14 +123,14 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "none",
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
     maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
   });
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "none",
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
 
@@ -166,14 +178,14 @@ const googleLogin = catchAsync(
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -192,9 +204,11 @@ const googleLogin = catchAsync(
 export const AuthController = {
   registerMerchant,
   verifyMerchantEmail,
-  loginUser,getMe,
+  loginUser,
+  getMe,
   refreshToken,
   forgotPassword,
   resetPassword,
-  googleLogin
+  googleLogin,
+  resendVerificationOtp,
 };
