@@ -12,6 +12,7 @@ import { ShipmentRouter } from "./app/module/shipment/shipment.route";
 import { PaymentRoutes } from "./app/module/payment/payment.route";
 import { analyticRouter } from "./app/module/analytics/analytics.route";
 import { adminAnalytic } from "./app/module/AI/analytics-ai.route";
+import { aiSupportRouter } from "./app/module/ai-support/ai-support.route";
 
 const app: Application = express();
 
@@ -35,6 +36,7 @@ app.use('/api/v1/shipment',ShipmentRouter)
 app.use('/api/v1/payment',PaymentRoutes)
 app.use('/api/v1/analytic',analyticRouter)
 app.use('/api/v1/ai-insights',adminAnalytic)
+app.use('/api/v1/ai-support',aiSupportRouter)
 
 app.get("/", async (req: Request, res: Response) => {
   res.status(httpstatus.OK).json({

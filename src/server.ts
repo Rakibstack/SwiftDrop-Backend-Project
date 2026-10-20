@@ -17,7 +17,7 @@ const main = async () => {
     console.log("Redis  Connected Successfully.");
     await transporter.verify();
     console.log("Nodemailer Conneted Successfully.");
-    await cleanupRiderApplications()
+    await cleanupRiderApplications();
     await seedTesterAdmin();
     console.log("Tester Admin Created Successfully.");
     app.listen(port, () => {

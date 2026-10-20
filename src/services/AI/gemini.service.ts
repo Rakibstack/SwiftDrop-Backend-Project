@@ -26,7 +26,7 @@ export const generateAIText = async ({
     config: {
       systemInstruction,
       temperature: 0.2,
-      maxOutputTokens:500,
+      maxOutputTokens:200,
     },
   });
 
