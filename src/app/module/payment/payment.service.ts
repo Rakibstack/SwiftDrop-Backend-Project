@@ -271,7 +271,7 @@ const initiateShipmentPaymentCallback = async (query: Record<string, any>) => {
           html,
         });
         return {
-          redirectUrl: `${config.frontend_url}/dashboard/my-shipments?status=success`,
+          redirectUrl: `${config.frontend_url}/merchant/shipments?status=success`,
         };
       } else if (status === "failure") {
         await tx.payment.update({
@@ -284,7 +284,7 @@ const initiateShipmentPaymentCallback = async (query: Record<string, any>) => {
           },
         });
         return {
-          redirectUrl: `${config.frontend_url}/dashboard/my-shipments?status=false`,
+          redirectUrl: `${config.frontend_url}/merchant/shipments?status=false`,
         };
       } else if (status === "cancel") {
         await tx.payment.update({
@@ -297,11 +297,11 @@ const initiateShipmentPaymentCallback = async (query: Record<string, any>) => {
           },
         });
         return {
-          redirectUrl: `${config.frontend_url}/dashboard/my-shipments?status=cancel`,
+          redirectUrl: `${config.frontend_url}/merchant/shipments?status=cancel`,
         };
       } else {
         return {
-          redirectUrl: `${config.frontend_url}/dashboard/my-shipments?error=payment_failed`,
+          redirectUrl: `${config.frontend_url}/merchant/shipments?error=payment_failed`,
         };
       }
     },

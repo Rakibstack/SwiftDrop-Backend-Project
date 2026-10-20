@@ -31,6 +31,19 @@ const verifyRiderEmail = catchAsync(
     });
   },
 );
+const resendVerificationOtp = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload = req.body;
+
+    await riderService.resendVerificationOtp(payload);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Verification OTP resent successfully",
+      data: null,
+    });
+  },
+);
 const approveRider = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;
@@ -197,5 +210,6 @@ export const riderController = {
   getMyAssignedShipments,
   acceptShipment,pickupShipment,
   markInTransit,outForDelivery,
-  deliverShipment
+  deliverShipment,
+  resendVerificationOtp,
 };

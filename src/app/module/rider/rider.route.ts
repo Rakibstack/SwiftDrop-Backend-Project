@@ -4,6 +4,7 @@ import { applyAsRiderSchema, reviewRiderSchema,  updateRiderProfileSchema, verif
 import { riderController } from "./rider.controller";
 import { auth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
+import { resendVerificationOtpSchema } from "../auth/auth.validation";
 
 const router = Router();
 
@@ -16,6 +17,11 @@ router.post(
   "/verify-rider-email",
   validationRequest(verifyEmailSchema),
   riderController.verifyRiderEmail,
+);
+router.post(
+  "/resend-verification-otp",
+  validationRequest(resendVerificationOtpSchema),
+  riderController.resendVerificationOtp,
 );
 router.post(
   "/approve-rider",
@@ -45,6 +51,7 @@ router.patch(
   auth(UserRole.RIDER),
   riderController.acceptShipment,
 );
+
 router.patch(
   "/shipments/:shipmentId/pickup",
   auth(UserRole.RIDER),
@@ -65,6 +72,7 @@ router.patch(
   auth(UserRole.RIDER),
   riderController.deliverShipment,
 );
+
 router.get(
   "/:riderId",
   auth(UserRole.ADMIN),

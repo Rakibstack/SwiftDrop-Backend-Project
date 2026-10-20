@@ -13,15 +13,16 @@ route.post(
   auth(UserRole.MERCHANT),
   paymentController.initiateShipmentPayment,
 );
-route.get(
-  "/bkash/payment/callback",
-  paymentController.initiateShipmentPaymentCallback,
-);
+
 route.post(
   "/cancel-shipment/:shipmentId",
   validationRequest(cancelShipmentSchema),
   auth(UserRole.MERCHANT),
   paymentController.cancelShipment,
+);
+route.get(
+  "/bkash/payment/callback",
+  paymentController.initiateShipmentPaymentCallback,
 );
 
 // admin only routes

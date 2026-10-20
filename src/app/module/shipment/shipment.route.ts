@@ -8,12 +8,33 @@ import { validationRequest } from "../../middleware/validationMiddleware";
 
 const router = Router();
 
+// merchant route
 router.post(
   "/",
   validationRequest(createShipmentSchema),
   auth(UserRole.MERCHANT),
   shipmentController.createShipment,
 );
+router.get(
+  "/get-all-shipment-merchant",
+  auth(UserRole.MERCHANT),
+  shipmentController.getAllShipment,
+);
+router.get(
+  "/get-single-shipment-merchant/:shipmentId",
+  auth(UserRole.MERCHANT),
+  shipmentController.getSingleShipment,
+);
+router.get(
+  "/track-shipment/:trackingId",
+  auth(UserRole.MERCHANT),
+  shipmentController.trackingShipment,
+);
+router.get(
+  "/track-shipment-public/:trackingId",
+  shipmentController.trackingShipmentPublic,
+);
+
 // admin route
 router.get(
   "/get-all-shipment-admin",
@@ -30,17 +51,6 @@ router.patch(
   validationRequest(assignRiderSchema),
   auth(UserRole.ADMIN),
   shipmentController.assignRider,
-);
-// merchant route
-router.get(
-  "/get-all-shipment-merchant",
-  auth(UserRole.MERCHANT),
-  shipmentController.getAllShipment,
-);
-router.get(
-  "/get-single-shipment-merchant/:shipmentId",
-  auth(UserRole.MERCHANT),
-  shipmentController.getSingleShipment,
 );
 
 export const ShipmentRouter = router;

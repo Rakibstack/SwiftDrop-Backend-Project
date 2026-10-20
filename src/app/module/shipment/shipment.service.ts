@@ -102,6 +102,73 @@ const createShipment = async (
 
   return result;
 };
+
+const trackingShipmentPublic = async (trackingId: string) => {
+  const shipment = await prisma.shipment.findUnique({
+    where: {
+      trackingId: trackingId,
+    },
+    select: {
+      trackingId: true,
+      parcelType: true,
+      status: true,
+      trackingEvents: {
+        select: {
+          status: true,
+          location: true,
+          description: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Shipment Not Found");
+  }
+
+  return shipment;
+};
+const trackingShipment = async (trackingId: string, user: requestUser) => {
+  const merchant = await prisma.merchantProfile.findUnique({
+    where: {
+      userId: user.userId,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!merchant) {
+    throw new AppError(httpstatus.NOT_FOUND, "Merchant Profile Not Found");
+  }
+  if (merchant.user.isDeleted) {
+    throw new AppError(httpstatus.NOT_FOUND, "This User Is Deleted");
+  }
+
+  const shipment = await prisma.shipment.findUnique({
+    where: {
+      trackingId: trackingId,
+      merchantId: merchant.id,
+    },
+    include: {
+      trackingEvents: {
+        select: {
+          status: true,
+          location: true,
+          description: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  if (!shipment) {
+    throw new AppError(httpstatus.NOT_FOUND, "Shipment Not Found");
+  }
+
+  return shipment;
+};
 // admin only api
 const getAllShipmentAdmin = async (query: IQuery, user: requestUser) => {
   const limit = query.limit ? Number(query.limit) : 10;
@@ -478,7 +545,7 @@ const getAllShipment = async (query: IQuery, user: requestUser) => {
 
   if (query.status) {
     addConditions.push({
-      status: query.vehicleType as ShipmentStatus,
+      status: query.status as ShipmentStatus,
     });
   }
   addConditions.push({
@@ -549,4 +616,6 @@ export const shipmentService = {
   getAllShipmentAdmin,
   getSingleShipmentAdmin,
   assignRider,
+  trackingShipmentPublic,
+  trackingShipment
 };

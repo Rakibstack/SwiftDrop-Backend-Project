@@ -10,6 +10,8 @@ import { UserRoutes } from "./app/module/user/user.route";
 import { RiderRoutes } from "./app/module/rider/rider.route";
 import { ShipmentRouter } from "./app/module/shipment/shipment.route";
 import { PaymentRoutes } from "./app/module/payment/payment.route";
+import { analyticRouter } from "./app/module/analytics/analytics.route";
+import { adminAnalytic } from "./app/module/AI/analytics-ai.route";
 
 const app: Application = express();
 
@@ -24,11 +26,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+app.set("trust proxy", 1);
+
 app.use('/api/v1/auth',AuthRoutes)
 app.use('/api/v1/user',UserRoutes)
 app.use('/api/v1/rider',RiderRoutes)
 app.use('/api/v1/shipment',ShipmentRouter)
 app.use('/api/v1/payment',PaymentRoutes)
+app.use('/api/v1/analytic',analyticRouter)
+app.use('/api/v1/ai-insights',adminAnalytic)
 
 app.get("/", async (req: Request, res: Response) => {
   res.status(httpstatus.OK).json({

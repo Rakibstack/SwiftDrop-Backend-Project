@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { userController } from "./user.controller";
 import { auth } from "../../middleware/checkAuth";

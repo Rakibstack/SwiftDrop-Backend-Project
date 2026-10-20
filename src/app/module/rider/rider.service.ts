@@ -27,6 +27,7 @@ import type {
   RiderProfileWhereInput,
   ShipmentWhereInput,
 } from "../../../generated/prisma/models";
+import type { IResendVerificationOtpPayload } from "../auth/auth.validation";
 
 const applyAsRider = async (payload: IApplyAsRiderPayload) => {
   const isUserExist = await prisma.user.findUnique({
@@ -68,6 +69,7 @@ const applyAsRider = async (payload: IApplyAsRiderPayload) => {
   const expiresInSeconds = 60 * 60;
   const otpKey = `rider-emailVerify-otp:${payload.email}`;
   const otpValue = crypto.randomInt(100000, 1000000).toString();
+
 
   await redisClient.set(otpKey, otpValue, {
     expiration: {
@@ -143,6 +145,56 @@ const verifyRiderEmail = async (payload: IVerifyEmailPayload) => {
   });
 
   return verifyUser;
+};
+const resendVerificationOtp = async (
+  payload: IResendVerificationOtpPayload,
+) => {
+  const { email } = payload;
+  // Check pending registration
+ 
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email,
+      role: UserRole.RIDER,
+    },
+  });
+
+  if (!existingUser) {
+    throw new AppError(
+      httpstatus.NOT_FOUND,
+      "Rider Application Not Found. Please Apply Again",
+    );
+  }
+
+  const expiresInSeconds = 5 * 60;
+  const otpKey = `rider-emailVerify-otp:${email}`;
+  const otpValue = crypto.randomInt(100000, 1000000).toString();
+
+  await redisClient.set(otpKey, otpValue, {
+    expiration: {
+      type: "EX",
+      value: expiresInSeconds,
+    },
+  });
+
+  const templatePath = path.join(
+    process.cwd(),
+    "src/app/template/SwiftDrop-RiderVerificationEmail.ejs",
+  );
+
+  const html = await ejs.renderFile(templatePath, {
+    name: existingUser.name,
+    otpValue,
+    expiresIn: expiresInSeconds / 60,
+    year: new Date().getFullYear(),
+  });
+
+  await transporter.sendMail({
+    from: config.sender_email,
+    to: email,
+    subject: "Email Verification OTP Send.",
+    html,
+  });
 };
 
 const approveRider = async (
@@ -806,5 +858,6 @@ export const riderService = {
   getMyAssignedShipments,
   acceptShipment,
   pickupShipment,markInTransit,
-  outForDelivery,deliverShipment
+  outForDelivery,deliverShipment,
+  resendVerificationOtp,
 };

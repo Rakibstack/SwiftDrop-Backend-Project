@@ -11,7 +11,7 @@ model Shipment {
 
   senderName String
   senderPhone String
-  senderAddress String
+  senderAddress String 
 
   recipientName String
   recipientPhone String

@@ -31,10 +31,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 
 // src/app.ts
-var import_express6 = __toESM(require("express"), 1);
+var import_express8 = __toESM(require("express"), 1);
 var import_cors = __toESM(require("cors"), 1);
 var import_cookie_parser = __toESM(require("cookie-parser"), 1);
-var import_http_status16 = __toESM(require("http-status"), 1);
+var import_http_status18 = __toESM(require("http-status"), 1);
 
 // src/app/config/index.ts
 var import_dotenv = __toESM(require("dotenv"), 1);
@@ -70,7 +70,9 @@ var config_default = {
   bkash_app_key: process.env.BKASH_APP_KEY,
   bkash_app_secret: process.env.BKASH_APP_SECRET,
   bkash_base_url: process.env.BKASH_BASE_URL,
-  bkash_callback_url: process.env.BKASH_CALLBACK_URL
+  bkash_callback_url: process.env.BKASH_CALLBACK_URL,
+  gemini_api_key: process.env.GEMINI_API_KEY,
+  gemini_model: process.env.GEMINI_MODEL
 };
 
 // src/app/module/auth/auth.route.ts
@@ -617,6 +619,44 @@ var verifyMerchantEmail = async (payload) => {
     refreshToken: refreshToken3
   };
 };
+var resendVerificationOtp = async (payload) => {
+  const { email } = payload;
+  const registrationData = await redis_default.get(
+    `merchant-register-data:${email}`
+  );
+  if (!registrationData) {
+    throw new AppError_default(
+      import_http_status.default.NOT_FOUND,
+      "No pending registration found for this email. Please register again."
+    );
+  }
+  const merchantPayload = JSON.parse(registrationData);
+  const expiresInSeconds = 5 * 60;
+  const otpKey = `merchant-register-otp:${email}`;
+  const otpValue = import_crypto.default.randomInt(1e5, 1e6).toString();
+  await redis_default.set(otpKey, otpValue, {
+    expiration: {
+      type: "EX",
+      value: expiresInSeconds
+    }
+  });
+  const templatePath = import_path.default.join(
+    process.cwd(),
+    "src/app/template/merchantRegisterOTP.ejs"
+  );
+  const html = await import_ejs.default.renderFile(templatePath, {
+    name: merchantPayload.name,
+    otpValue,
+    expiresIn: expiresInSeconds / 60,
+    year: (/* @__PURE__ */ new Date()).getFullYear()
+  });
+  await nodemailer_default.sendMail({
+    from: config_default.sender_email,
+    to: email,
+    subject: "Email Verification OTP Send.",
+    html
+  });
+};
 var loginUser = async (payload) => {
   const user = await prisma.user.findUnique({
     where: { email: payload.email }
@@ -743,6 +783,7 @@ var forgotPassword = async (payload) => {
   const expiresInSecend = 5 * 60;
   const otp = import_crypto.default.randomInt(1e5, 1e6).toString();
   const key = `forgot-password-otp:${isForgotUserExist.email}`;
+  console.log(otp);
   await redis_default.set(key, otp, {
     expiration: {
       type: "EX",
@@ -886,31 +927,31 @@ var googleLogin = async (payload) => {
           googleId: googleIdTokenPayload.sub
         }
       });
+    } else {
+      user = await prisma.user.create({
+        data: {
+          name: googleIdTokenPayload.name,
+          email: googleIdTokenPayload.email,
+          role: UserRole.MERCHANT,
+          googleId: googleIdTokenPayload.sub,
+          authProvider: AuthProvider.GOOGLE,
+          emailVerified: true
+        }
+      });
+      const templatePath = import_path.default.join(
+        process.cwd(),
+        "src/app/template/SwiftDrop-WelcomeEmail.ejs"
+      );
+      const html = await import_ejs.default.renderFile(templatePath, {
+        name: googleIdTokenPayload.name
+      });
+      await nodemailer_default.sendMail({
+        from: config_default.sender_email,
+        to: googleIdTokenPayload.email,
+        subject: "Welcome to SwiftDrop",
+        html
+      });
     }
-  } else {
-    user = await prisma.user.create({
-      data: {
-        name: googleIdTokenPayload.name,
-        email: googleIdTokenPayload.email,
-        role: UserRole.MERCHANT,
-        googleId: googleIdTokenPayload.sub,
-        authProvider: AuthProvider.GOOGLE,
-        emailVerified: true
-      }
-    });
-    const templatePath = import_path.default.join(
-      process.cwd(),
-      "src/app/template/SwiftDrop-WelcomeEmail.ejs"
-    );
-    const html = await import_ejs.default.renderFile(templatePath, {
-      name: googleIdTokenPayload.name
-    });
-    await nodemailer_default.sendMail({
-      from: config_default.sender_email,
-      to: googleIdTokenPayload.email,
-      subject: "Welcome to SwiftDrop",
-      html
-    });
   }
   if (!user) {
     throw new AppError_default(import_http_status.default.NOT_FOUND, "User Not Found");
@@ -941,6 +982,7 @@ var AuthService = {
   verifyMerchantEmail,
   loginUser,
   getMe,
+  resendVerificationOtp,
   refreshToken,
   forgotPassword,
   resetPassword,
@@ -979,15 +1021,15 @@ var verifyMerchantEmail2 = catchAsync(
     const { accessToken, refreshToken: refreshToken3, user, merchantProfile } = result;
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config_default.node_env === "development" ? false : true,
+      sameSite: config_default.node_env === "development" ? "lax" : "none",
       maxAge: 1e3 * 60 * 60 * 24
       // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken3, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config_default.node_env === "development" ? false : true,
+      sameSite: config_default.node_env === "development" ? "lax" : "none",
       maxAge: 1e3 * 60 * 60 * 24 * 7
       // 7 days
     });
@@ -1011,15 +1053,21 @@ var loginUser2 = catchAsync(
     const { accessToken, refreshToken: refreshToken3 } = result;
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      // secure: config.node_env === "development" ? false : true,
+      secure: true,
+      // sameSite: config.node_env === "development" ? "lax" : "none",
+      sameSite: "lax",
+      path: "/",
       maxAge: 1e3 * 60 * 60 * 24
       // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken3, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      // secure: config.node_env === "development" ? false : true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      // sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1e3 * 60 * 60 * 24 * 7
       // 7 days
     });
@@ -1031,6 +1079,18 @@ var loginUser2 = catchAsync(
         accessToken,
         refreshToken: refreshToken3
       }
+    });
+  }
+);
+var resendVerificationOtp2 = catchAsync(
+  async (req, res) => {
+    const payload = req.body;
+    await AuthService.resendVerificationOtp(payload);
+    sendResponse(res, {
+      statusCode: import_http_status2.default.OK,
+      success: true,
+      message: "Verification OTP resent successfully",
+      data: null
     });
   }
 );
@@ -1058,15 +1118,15 @@ var refreshToken2 = catchAsync(async (req, res) => {
   const { accessToken, refreshToken: newRefreshToken } = result;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "none",
+    secure: config_default.node_env === "development" ? false : true,
+    sameSite: config_default.node_env === "development" ? "lax" : "none",
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "none",
+    secure: config_default.node_env === "development" ? false : true,
+    sameSite: config_default.node_env === "development" ? "lax" : "none",
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
   });
@@ -1111,15 +1171,15 @@ var googleLogin2 = catchAsync(
     const { accessToken, refreshToken: refreshToken3 } = result;
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config_default.node_env === "development" ? false : true,
+      sameSite: config_default.node_env === "development" ? "lax" : "none",
       maxAge: 1e3 * 60 * 60 * 24
       // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken3, {
       httpOnly: true,
-      secure: false,
-      sameSite: "none",
+      secure: config_default.node_env === "development" ? false : true,
+      sameSite: config_default.node_env === "development" ? "lax" : "none",
       maxAge: 1e3 * 60 * 60 * 24 * 7
       // 7 days
     });
@@ -1134,6 +1194,18 @@ var googleLogin2 = catchAsync(
     });
   }
 );
+var logout = catchAsync(
+  async (req, res, next) => {
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status2.default.OK,
+      message: "User Logged Out Successfull",
+      data: null
+    });
+  }
+);
 var AuthController = {
   registerMerchant: registerMerchant2,
   verifyMerchantEmail: verifyMerchantEmail2,
@@ -1142,7 +1214,9 @@ var AuthController = {
   refreshToken: refreshToken2,
   forgotPassword: forgotPassword2,
   resetPassword: resetPassword2,
-  googleLogin: googleLogin2
+  googleLogin: googleLogin2,
+  resendVerificationOtp: resendVerificationOtp2,
+  logout
 };
 
 // src/app/middleware/validationMiddleware.ts
@@ -1176,6 +1250,9 @@ var verifyEmailSchema = import_zod.z.object({
   email: import_zod.z.string().trim().toLowerCase().email("Please provide a valid email address"),
   otp: import_zod.z.string().trim().length(6, "OTP must be exactly 6 digits").regex(/^\d{6}$/, "OTP must contain only numbers")
 });
+var resendVerificationOtpSchema = import_zod.z.object({
+  email: import_zod.z.string().trim().toLowerCase().email("Please provide a valid email address")
+});
 var merchantLoginSchema = import_zod.z.object({
   email: import_zod.z.string().trim().toLowerCase().email("Please provide a valid email address"),
   password: import_zod.z.string().min(8, "Password must be at least 8 characters long").max(50, "Password cannot exceed 100 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(
@@ -1207,7 +1284,6 @@ var auth = (...requiredRoles) => {
       );
     }
     const verifiedToken = jwtUtils.verifyToken(token, config_default.jwt_access_secret);
-    console.log(verifiedToken, "rider");
     if (!verifiedToken.success) {
       throw new AppError_default(import_http_status4.default.UNAUTHORIZED, verifiedToken.error);
     }
@@ -1266,6 +1342,11 @@ router.post(
   AuthController.verifyMerchantEmail
 );
 router.post(
+  "/resend-verification-otp",
+  validationRequest(resendVerificationOtpSchema),
+  AuthController.resendVerificationOtp
+);
+router.post(
   "/login",
   validationRequest(merchantLoginSchema),
   AuthController.loginUser
@@ -1293,6 +1374,7 @@ router.post(
   "/google",
   AuthController.googleLogin
 );
+router.post("/logout", AuthController.logout);
 var AuthRoutes = router;
 
 // src/app/middleware/globalErrorHandler.ts
@@ -1805,6 +1887,46 @@ var verifyRiderEmail = async (payload) => {
     include: { riderProfile: true }
   });
   return verifyUser;
+};
+var resendVerificationOtp3 = async (payload) => {
+  const { email } = payload;
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email,
+      role: UserRole.RIDER
+    }
+  });
+  if (!existingUser) {
+    throw new AppError_default(
+      import_http_status9.default.NOT_FOUND,
+      "Rider Application Not Found. Please Apply Again"
+    );
+  }
+  const expiresInSeconds = 5 * 60;
+  const otpKey = `rider-emailVerify-otp:${email}`;
+  const otpValue = import_crypto2.default.randomInt(1e5, 1e6).toString();
+  await redis_default.set(otpKey, otpValue, {
+    expiration: {
+      type: "EX",
+      value: expiresInSeconds
+    }
+  });
+  const templatePath = import_path2.default.join(
+    process.cwd(),
+    "src/app/template/SwiftDrop-RiderVerificationEmail.ejs"
+  );
+  const html = await import_ejs2.default.renderFile(templatePath, {
+    name: existingUser.name,
+    otpValue,
+    expiresIn: expiresInSeconds / 60,
+    year: (/* @__PURE__ */ new Date()).getFullYear()
+  });
+  await nodemailer_default.sendMail({
+    from: config_default.sender_email,
+    to: email,
+    subject: "Email Verification OTP Send.",
+    html
+  });
 };
 var approveRider = async (payload, reviewer) => {
   const { riderId, status, rejectionReason } = payload;
@@ -2368,7 +2490,8 @@ var riderService = {
   pickupShipment,
   markInTransit,
   outForDelivery,
-  deliverShipment
+  deliverShipment,
+  resendVerificationOtp: resendVerificationOtp3
 };
 
 // src/app/module/rider/rider.controller.ts
@@ -2393,6 +2516,18 @@ var verifyRiderEmail2 = catchAsync(
       success: true,
       message: "Rider email verified successfully",
       data: result
+    });
+  }
+);
+var resendVerificationOtp4 = catchAsync(
+  async (req, res) => {
+    const payload = req.body;
+    await riderService.resendVerificationOtp(payload);
+    sendResponse(res, {
+      statusCode: import_http_status10.default.OK,
+      success: true,
+      message: "Verification OTP resent successfully",
+      data: null
     });
   }
 );
@@ -2548,7 +2683,8 @@ var riderController = {
   pickupShipment: pickupShipment2,
   markInTransit: markInTransit2,
   outForDelivery: outForDelivery2,
-  deliverShipment: deliverShipment2
+  deliverShipment: deliverShipment2,
+  resendVerificationOtp: resendVerificationOtp4
 };
 
 // src/app/module/rider/rider.route.ts
@@ -2562,6 +2698,11 @@ router3.post(
   "/verify-rider-email",
   validationRequest(verifyEmailSchema2),
   riderController.verifyRiderEmail
+);
+router3.post(
+  "/resend-verification-otp",
+  validationRequest(resendVerificationOtpSchema),
+  riderController.resendVerificationOtp
 );
 router3.post(
   "/approve-rider",
@@ -2701,6 +2842,66 @@ var createShipment = async (payload, user) => {
     return shipment;
   });
   return result;
+};
+var trackingShipmentPublic = async (trackingId) => {
+  const shipment = await prisma.shipment.findUnique({
+    where: {
+      trackingId
+    },
+    select: {
+      trackingId: true,
+      parcelType: true,
+      status: true,
+      trackingEvents: {
+        select: {
+          status: true,
+          location: true,
+          description: true,
+          createdAt: true
+        }
+      }
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status11.default.NOT_FOUND, "Shipment Not Found");
+  }
+  return shipment;
+};
+var trackingShipment = async (trackingId, user) => {
+  const merchant = await prisma.merchantProfile.findUnique({
+    where: {
+      userId: user.userId
+    },
+    include: {
+      user: true
+    }
+  });
+  if (!merchant) {
+    throw new AppError_default(import_http_status11.default.NOT_FOUND, "Merchant Profile Not Found");
+  }
+  if (merchant.user.isDeleted) {
+    throw new AppError_default(import_http_status11.default.NOT_FOUND, "This User Is Deleted");
+  }
+  const shipment = await prisma.shipment.findUnique({
+    where: {
+      trackingId,
+      merchantId: merchant.id
+    },
+    include: {
+      trackingEvents: {
+        select: {
+          status: true,
+          location: true,
+          description: true,
+          createdAt: true
+        }
+      }
+    }
+  });
+  if (!shipment) {
+    throw new AppError_default(import_http_status11.default.NOT_FOUND, "Shipment Not Found");
+  }
+  return shipment;
 };
 var getAllShipmentAdmin = async (query, user) => {
   const limit = query.limit ? Number(query.limit) : 10;
@@ -3031,7 +3232,7 @@ var getAllShipment = async (query, user) => {
   }
   if (query.status) {
     addConditions.push({
-      status: query.vehicleType
+      status: query.status
     });
   }
   addConditions.push({
@@ -3095,38 +3296,61 @@ var shipmentService = {
   getSingleShipment,
   getAllShipmentAdmin,
   getSingleShipmentAdmin,
-  assignRider
+  assignRider,
+  trackingShipmentPublic,
+  trackingShipment
 };
 
 // src/app/module/shipment/shipment.controller.ts
-var createShipment2 = catchAsync(
+var createShipment2 = catchAsync(async (req, res) => {
+  const result = await shipmentService.createShipment(
+    req.body,
+    req.user
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: import_http_status12.default.CREATED,
+    message: "Shipment Created Successfully",
+    data: result
+  });
+});
+var trackingShipment2 = catchAsync(async (req, res) => {
+  const trackingId = req.params.trackingId;
+  const result = await shipmentService.trackingShipment(
+    trackingId,
+    req.user
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: import_http_status12.default.OK,
+    message: "Retrieve All Tracking Event Successfully",
+    data: result
+  });
+});
+var trackingShipmentPublic2 = catchAsync(
   async (req, res) => {
-    const result = await shipmentService.createShipment(
-      req.body,
-      req.user
-    );
+    const trackingId = req.params.trackingId;
+    const result = await shipmentService.trackingShipmentPublic(trackingId);
     sendResponse(res, {
       success: true,
-      statusCode: import_http_status12.default.CREATED,
-      message: "Shipment Created Successfully",
+      statusCode: import_http_status12.default.OK,
+      message: "Retrieve All Tracking Event Successfully",
       data: result
     });
   }
 );
-var getAllShipmentAdmin2 = catchAsync(
-  async (req, res) => {
-    const result = await shipmentService.getAllShipmentAdmin(
-      req.query,
-      req.user
-    );
-    sendResponse(res, {
-      success: true,
-      statusCode: import_http_status12.default.CREATED,
-      message: "Retrieve All Shipment Successfully",
-      data: result
-    });
-  }
-);
+var getAllShipmentAdmin2 = catchAsync(async (req, res) => {
+  const result = await shipmentService.getAllShipmentAdmin(
+    req.query,
+    req.user
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: import_http_status12.default.CREATED,
+    message: "Retrieve All Shipment Successfully",
+    data: result
+  });
+});
 var getSingleShipmentAdmin2 = catchAsync(
   async (req, res) => {
     const shipmentId = req.params.shipmentId;
@@ -3142,57 +3366,53 @@ var getSingleShipmentAdmin2 = catchAsync(
     });
   }
 );
-var assignRider2 = catchAsync(
-  async (req, res) => {
-    const result = await shipmentService.assignRider(
-      req.params.shipmentId,
-      req.body,
-      req.user
-    );
-    sendResponse(res, {
-      success: true,
-      statusCode: import_http_status12.default.OK,
-      message: "Rider Assigned Successfully",
-      data: result
-    });
-  }
-);
-var getAllShipment2 = catchAsync(
-  async (req, res) => {
-    const result = await shipmentService.getAllShipment(
-      req.query,
-      req.user
-    );
-    sendResponse(res, {
-      success: true,
-      statusCode: import_http_status12.default.CREATED,
-      message: "Retrieve All Shipment Successfully",
-      data: result
-    });
-  }
-);
-var getSingleShipment2 = catchAsync(
-  async (req, res) => {
-    const shipmentId = req.params.shipmentId;
-    const result = await shipmentService.getSingleShipment(
-      shipmentId,
-      req.user
-    );
-    sendResponse(res, {
-      success: true,
-      statusCode: import_http_status12.default.CREATED,
-      message: "Retrieve Single Shipment Successfully",
-      data: result
-    });
-  }
-);
+var assignRider2 = catchAsync(async (req, res) => {
+  const result = await shipmentService.assignRider(
+    req.params.shipmentId,
+    req.body,
+    req.user
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: import_http_status12.default.OK,
+    message: "Rider Assigned Successfully",
+    data: result
+  });
+});
+var getAllShipment2 = catchAsync(async (req, res) => {
+  const result = await shipmentService.getAllShipment(
+    req.query,
+    req.user
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: import_http_status12.default.CREATED,
+    message: "Retrieve All Shipment Successfully",
+    data: result
+  });
+});
+var getSingleShipment2 = catchAsync(async (req, res) => {
+  const shipmentId = req.params.shipmentId;
+  const result = await shipmentService.getSingleShipment(
+    shipmentId,
+    req.user
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: import_http_status12.default.CREATED,
+    message: "Retrieve Single Shipment Successfully",
+    data: result
+  });
+});
 var shipmentController = {
   createShipment: createShipment2,
   getAllShipment: getAllShipment2,
   getSingleShipment: getSingleShipment2,
   getAllShipmentAdmin: getAllShipmentAdmin2,
   getSingleShipmentAdmin: getSingleShipmentAdmin2,
-  assignRider: assignRider2
+  assignRider: assignRider2,
+  trackingShipment: trackingShipment2,
+  trackingShipmentPublic: trackingShipmentPublic2
 };
 
 // src/app/module/shipment/shipment.validation.ts
@@ -3228,6 +3448,25 @@ router4.post(
   shipmentController.createShipment
 );
 router4.get(
+  "/get-all-shipment-merchant",
+  auth(UserRole.MERCHANT),
+  shipmentController.getAllShipment
+);
+router4.get(
+  "/get-single-shipment-merchant/:shipmentId",
+  auth(UserRole.MERCHANT),
+  shipmentController.getSingleShipment
+);
+router4.get(
+  "/track-shipment/:trackingId",
+  auth(UserRole.MERCHANT),
+  shipmentController.trackingShipment
+);
+router4.get(
+  "/track-shipment-public/:trackingId",
+  shipmentController.trackingShipmentPublic
+);
+router4.get(
   "/get-all-shipment-admin",
   auth(UserRole.ADMIN),
   shipmentController.getAllShipmentAdmin
@@ -3242,16 +3481,6 @@ router4.patch(
   validationRequest(assignRiderSchema),
   auth(UserRole.ADMIN),
   shipmentController.assignRider
-);
-router4.get(
-  "/get-all-shipment-merchant",
-  auth(UserRole.MERCHANT),
-  shipmentController.getAllShipment
-);
-router4.get(
-  "/get-single-shipment-merchant/:shipmentId",
-  auth(UserRole.MERCHANT),
-  shipmentController.getSingleShipment
 );
 var ShipmentRouter = router4;
 
@@ -3579,7 +3808,7 @@ var initiateShipmentPaymentCallback = async (query) => {
           html
         });
         return {
-          redirectUrl: `${config_default.frontend_url}/dashboard/my-shipments?status=success`
+          redirectUrl: `${config_default.frontend_url}/merchant/shipments?status=success`
         };
       } else if (status === "failure") {
         await tx.payment.update({
@@ -3592,7 +3821,7 @@ var initiateShipmentPaymentCallback = async (query) => {
           }
         });
         return {
-          redirectUrl: `${config_default.frontend_url}/dashboard/my-shipments?status=false`
+          redirectUrl: `${config_default.frontend_url}/merchant/shipments?status=false`
         };
       } else if (status === "cancel") {
         await tx.payment.update({
@@ -3605,11 +3834,11 @@ var initiateShipmentPaymentCallback = async (query) => {
           }
         });
         return {
-          redirectUrl: `${config_default.frontend_url}/dashboard/my-shipments?status=cancel`
+          redirectUrl: `${config_default.frontend_url}/merchant/shipments?status=cancel`
         };
       } else {
         return {
-          redirectUrl: `${config_default.frontend_url}/dashboard/my-shipments?error=payment_failed`
+          redirectUrl: `${config_default.frontend_url}/merchant/shipments?error=payment_failed`
         };
       }
     },
@@ -4154,15 +4383,15 @@ route.post(
   auth(UserRole.MERCHANT),
   paymentController.initiateShipmentPayment
 );
-route.get(
-  "/bkash/payment/callback",
-  paymentController.initiateShipmentPaymentCallback
-);
 route.post(
   "/cancel-shipment/:shipmentId",
   validationRequest(cancelShipmentSchema),
   auth(UserRole.MERCHANT),
   paymentController.cancelShipment
+);
+route.get(
+  "/bkash/payment/callback",
+  paymentController.initiateShipmentPaymentCallback
 );
 route.get(
   "/get-all-payment-admin",
@@ -4186,24 +4415,394 @@ route.get(
 );
 var PaymentRoutes = route;
 
+// src/app/module/analytics/analytics.route.ts
+var import_express6 = require("express");
+
+// src/app/module/analytics/analytics.service.ts
+var getAdminAnalytics = async () => {
+  const now = /* @__PURE__ */ new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const sevenDaysAgo = new Date(startOfToday);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  const [
+    totalUsers,
+    activeUsers,
+    activeRiders,
+    totalShipments,
+    pendingShipments,
+    confirmedShipments,
+    cancelledShipments,
+    deliveredShipments,
+    recentShipments,
+    recentActivities,
+    revenueSummary,
+    todayShipments,
+    todayPayments,
+    recentPayments
+  ] = await Promise.all([
+    prisma.user.count({
+      where: {
+        isDeleted: false
+      }
+    }),
+    // Active non-deleted users
+    prisma.user.count({
+      where: {
+        isDeleted: false,
+        status: UserStatus.ACTIVE
+      }
+    }),
+    // Active riders
+    prisma.user.count({
+      where: {
+        role: UserRole.RIDER,
+        isDeleted: false,
+        status: UserStatus.ACTIVE,
+        riderProfile: {
+          is: {
+            status: RiderStatus.ACTIVE
+          }
+        }
+      }
+    }),
+    // Total shipments
+    prisma.shipment.count(),
+    // Payment pending shipments
+    prisma.shipment.count({
+      where: {
+        status: ShipmentStatus.PAYMENT_PENDING
+      }
+    }),
+    // Payment confirmed shipments
+    prisma.shipment.count({
+      where: {
+        status: ShipmentStatus.PAYMENT_CONFIRMED
+      }
+    }),
+    // Cancelled shipments
+    prisma.shipment.count({
+      where: {
+        status: ShipmentStatus.CANCELLED
+      }
+    }),
+    // Delivered shipments
+    prisma.shipment.count({
+      where: {
+        status: ShipmentStatus.DELIVERED
+      }
+    }),
+    // Latest shipments
+    prisma.shipment.findMany({
+      orderBy: {
+        createdAt: "desc"
+      },
+      take: 5,
+      select: {
+        id: true,
+        senderName: true,
+        deliveryFee: true,
+        recipientAddress: true,
+        status: true,
+        createdAt: true
+      }
+    }),
+    // Latest tracking activities
+    prisma.trackingEvent.findMany({
+      orderBy: {
+        createdAt: "desc"
+      },
+      take: 5,
+      select: {
+        id: true,
+        description: true,
+        status: true,
+        createdAt: true,
+        shipmentId: true
+      }
+    }),
+    // Revenue summary for all paid payments
+    prisma.payment.aggregate({
+      where: {
+        status: PaymentStatus.PAID
+      },
+      _sum: {
+        amount: true
+      },
+      _count: {
+        _all: true
+      }
+    }),
+    // Shipments created today
+    prisma.shipment.count({
+      where: {
+        createdAt: {
+          gte: startOfToday,
+          lte: now
+        }
+      }
+    }),
+    // Payments received today
+    prisma.payment.aggregate({
+      where: {
+        status: PaymentStatus.PAID,
+        createdAt: {
+          gte: startOfToday,
+          lte: now
+        }
+      },
+      _sum: {
+        amount: true
+      },
+      _count: {
+        _all: true
+      }
+    }),
+    // Paid payments during the last 7 days
+    prisma.payment.findMany({
+      where: {
+        status: PaymentStatus.PAID,
+        createdAt: {
+          gte: sevenDaysAgo,
+          lte: now
+        }
+      },
+      select: {
+        amount: true,
+        createdAt: true
+      },
+      orderBy: {
+        createdAt: "asc"
+      }
+    })
+  ]);
+  const revenueByDay = /* @__PURE__ */ new Map();
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(sevenDaysAgo);
+    day.setDate(sevenDaysAgo.getDate() + i);
+    const dateKey = [
+      day.getFullYear(),
+      String(day.getMonth() + 1).padStart(2, "0"),
+      String(day.getDate()).padStart(2, "0")
+    ].join("-");
+    revenueByDay.set(dateKey, 0);
+  }
+  for (const payment of recentPayments) {
+    const date = new Date(payment.createdAt);
+    const dateKey = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
+    if (revenueByDay.has(dateKey)) {
+      revenueByDay.set(
+        dateKey,
+        (revenueByDay.get(dateKey) ?? 0) + Number(payment.amount)
+      );
+    }
+  }
+  const revenueTrend = Array.from(revenueByDay, ([date, revenue]) => ({
+    date,
+    revenue
+  }));
+  return {
+    overview: {
+      totalUsers,
+      activeUsers,
+      activeRiders,
+      totalShipments,
+      pendingShipments,
+      confirmedShipments,
+      cancelledShipments,
+      deliveredShipments,
+      todayShipments
+    },
+    revenue: {
+      totalPaidAmount: Number(revenueSummary._sum.amount ?? 0),
+      totalPaidTransactions: revenueSummary._count._all,
+      todayPaidAmount: Number(todayPayments._sum.amount ?? 0),
+      todayPaidTransactions: todayPayments._count._all,
+      trend: revenueTrend
+    },
+    recentShipments,
+    recentActivities
+  };
+};
+var analyticService = {
+  getAdminAnalytics
+};
+
+// src/app/module/analytics/analytics.controller.ts
+var import_http_status16 = __toESM(require("http-status"), 1);
+var getAdminAnalytics2 = catchAsync(
+  async (req, res, next) => {
+    const result = await analyticService.getAdminAnalytics();
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status16.default.OK,
+      message: "Retrieve Admin Analytic Successfully",
+      data: result
+    });
+  }
+);
+var analyticController = {
+  getAdminAnalytics: getAdminAnalytics2
+};
+
+// src/app/module/analytics/analytics.route.ts
+var router5 = (0, import_express6.Router)();
+router5.get("/admin-analytic", analyticController.getAdminAnalytics);
+var analyticRouter = router5;
+
+// src/app/module/AI/analytics-ai.route.ts
+var import_express7 = require("express");
+
+// src/app/module/AI/analytics-ai.controller.ts
+var import_http_status17 = __toESM(require("http-status"), 1);
+
+// src/services/AI/gemini.service.ts
+var import_genai = require("@google/genai");
+var apiKey = config_default.gemini_api_key;
+if (!apiKey) {
+  throw new Error("GEMINI_API_KEY is not configured");
+}
+var ai = new import_genai.GoogleGenAI({ apiKey });
+var model = config_default.gemini_model ?? "gemini-3.8-flash";
+var generateAIText = async ({
+  systemInstruction,
+  prompt
+}) => {
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt,
+    config: {
+      systemInstruction,
+      temperature: 0.2,
+      maxOutputTokens: 500
+    }
+  });
+  const text = response.text?.trim();
+  if (!text) {
+    throw new Error("AI returned an empty response");
+  }
+  return text;
+};
+
+// src/app/module/AI/analytics-ai.service.ts
+var generateAdminAIInsights = async () => {
+  const analytics = await analyticService.getAdminAnalytics();
+  const { overview, revenue } = analytics;
+  const cancellationRate = overview.totalShipments > 0 ? Number(
+    (overview.cancelledShipments / overview.totalShipments * 100).toFixed(1)
+  ) : 0;
+  const deliveryRate = overview.totalShipments > 0 ? Number(
+    (overview.deliveredShipments / overview.totalShipments * 100).toFixed(1)
+  ) : 0;
+  const paymentPendingRate = overview.totalShipments > 0 ? Number(
+    // This is specifically PAYMENT_PENDING, not delivery pending.
+    (overview.pendingShipments / overview.totalShipments * 100).toFixed(
+      1
+    )
+  ) : 0;
+  const metrics = {
+    overview,
+    revenue: {
+      totalPaidAmount: revenue.totalPaidAmount,
+      totalPaidTransactions: revenue.totalPaidTransactions,
+      todayPaidAmount: revenue.todayPaidAmount,
+      todayPaidTransactions: revenue.todayPaidTransactions,
+      trend: revenue.trend
+    },
+    calculatedMetrics: {
+      cancellationRatePercent: cancellationRate,
+      deliveredSharePercent: deliveryRate,
+      paymentPendingSharePercent: paymentPendingRate
+    }
+  };
+  const insights = await generateAIText({
+    systemInstruction: `
+      You are SwiftDrop's logistics analytics assistant for administrators.
+
+      Analyze only the supplied JSON metrics.
+      Never invent numbers, causes, events, or business facts.
+      Distinguish payment-pending shipments from delivery delays.
+      A zero-revenue day alone is not proof of an anomaly.
+      If the dataset is small, explain that conclusions are limited.
+      Provide:
+      1. A short overall summary.
+      2. Two or three observations grounded in the data.
+      3. Up to three practical recommendations.
+      Keep the language clear, concise, and professional.
+      If the data does not support a conclusion, say so.
+    `,
+    prompt: `
+      Analyze the following SwiftDrop analytics data.
+
+      Return a concise report with the headings:
+      Overall Summary
+      Key Observations
+      Recommended Actions
+
+      Analytics JSON:
+      ${JSON.stringify(metrics)}
+    `
+  });
+  return {
+    generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    metrics,
+    insights
+  };
+};
+var analyticsAIService = {
+  generateAdminAIInsights
+};
+
+// src/app/module/AI/analytics-ai.controller.ts
+var getAdminAIInsights = catchAsync(
+  async (_req, res) => {
+    const result = await analyticsAIService.generateAdminAIInsights();
+    sendResponse(res, {
+      success: true,
+      statusCode: import_http_status17.default.OK,
+      message: "AI Logistics Insights generated successfully",
+      data: result
+    });
+  }
+);
+var analyticsAIController = {
+  getAdminAIInsights
+};
+
+// src/app/module/AI/analytics-ai.route.ts
+var router6 = (0, import_express7.Router)();
+router6.get(
+  "/admin-ai-insights",
+  auth(UserRole.ADMIN),
+  analyticsAIController.getAdminAIInsights
+);
+var adminAnalytic = router6;
+
 // src/app.ts
-var app = (0, import_express6.default)();
+var app = (0, import_express8.default)();
 app.use(
   (0, import_cors.default)({
     origin: config_default.frontend_url,
     credentials: true
   })
 );
-app.use(import_express6.default.urlencoded({ extended: true }));
-app.use(import_express6.default.json());
+app.use(import_express8.default.urlencoded({ extended: true }));
+app.use(import_express8.default.json());
 app.use((0, import_cookie_parser.default)());
+app.set("trust proxy", 1);
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/rider", RiderRoutes);
 app.use("/api/v1/shipment", ShipmentRouter);
 app.use("/api/v1/payment", PaymentRoutes);
+app.use("/api/v1/analytic", analyticRouter);
+app.use("/api/v1/ai-insights", adminAnalytic);
 app.get("/", async (req, res) => {
-  res.status(import_http_status16.default.OK).json({
+  res.status(import_http_status18.default.OK).json({
     success: true,
     message: "Welcome to SwiftDrop \u2014 Merchant-Focused Courier & Last-Mile Logistics Platform "
   });
@@ -4212,9 +4811,64 @@ app.use(globalErrorHandler);
 app.use(notFound);
 var app_default = app;
 
+// src/app/lib/corn.ts
+var import_node_cron = __toESM(require("node-cron"), 1);
+var cleanupRiderApplications = async () => {
+  import_node_cron.default.schedule("*/10 * * * *", async () => {
+    try {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1e3);
+      const deletedUnverifiedRiders = await prisma.user.deleteMany({
+        where: {
+          role: UserRole.RIDER,
+          emailVerified: false,
+          createdAt: {
+            lt: oneHourAgo
+          },
+          riderProfile: {
+            status: RiderStatus.PENDING
+          }
+        }
+      });
+      const oneMonthAgo = /* @__PURE__ */ new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const deletedRejectedRiders = await prisma.user.deleteMany({
+        where: {
+          role: UserRole.RIDER,
+          riderProfile: {
+            status: RiderStatus.REJECTED,
+            rejectedAt: {
+              lt: oneMonthAgo
+            }
+          }
+        }
+      });
+      const unverifiedCount = deletedUnverifiedRiders.count;
+      const rejectedCount = deletedRejectedRiders.count;
+      if (unverifiedCount > 0 || rejectedCount > 0) {
+        console.log(
+          `Rider application cleanup completed: ${unverifiedCount} unverified pending application(s) and ${rejectedCount} rejected application(s) were removed.`
+        );
+      } else {
+        console.log(
+          "Rider application cleanup completed: no expired applications found."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Rider application cleanup failed while removing expired applications:",
+        error
+      );
+    }
+  });
+  console.log(
+    "Rider application cleanup job scheduled successfully. It will run every 10 minutes."
+  );
+};
+var corn_default = cleanupRiderApplications;
+
 // src/app/utils/seed.ts
 var import_bcryptjs3 = __toESM(require("bcryptjs"), 1);
-var import_http_status17 = __toESM(require("http-status"), 1);
+var import_http_status19 = __toESM(require("http-status"), 1);
 var seedTesterAdmin = async () => {
   try {
     const isTesterAdminExist = await prisma.user.findUnique({
@@ -4231,7 +4885,7 @@ var seedTesterAdmin = async () => {
     const password = config_default.tester_admin_password;
     if (!name || !email || !password) {
       throw new AppError_default(
-        import_http_status17.default.INTERNAL_SERVER_ERROR,
+        import_http_status19.default.INTERNAL_SERVER_ERROR,
         "Tester Admin Name,Email,Password Is Missing In ENV"
       );
     }
@@ -4270,6 +4924,7 @@ var main = async () => {
     console.log("Redis  Connected Successfully.");
     await nodemailer_default.verify();
     console.log("Nodemailer Conneted Successfully.");
+    await corn_default();
     await seedTesterAdmin();
     console.log("Tester Admin Created Successfully.");
     app_default.listen(port, () => {

@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 import path from "node:path";
 
@@ -37,9 +36,11 @@ export default {
   google_client_id: process.env.GOOGLE_CLIENT_ID!,
 
   bkash_username: process.env.BKASH_USERNAME!,
-	bkash_password: process.env.BKASH_PASSWORD!,
-	bkash_app_key: process.env.BKASH_APP_KEY!,
-	bkash_app_secret: process.env.BKASH_APP_SECRET!,
-	bkash_base_url: process.env.BKASH_BASE_URL!,
-	bkash_callback_url: process.env.BKASH_CALLBACK_URL!,
+  bkash_password: process.env.BKASH_PASSWORD!,
+  bkash_app_key: process.env.BKASH_APP_KEY!,
+  bkash_app_secret: process.env.BKASH_APP_SECRET!,
+  bkash_base_url: process.env.BKASH_BASE_URL!,
+  bkash_callback_url: process.env.BKASH_CALLBACK_URL!,
+  gemini_api_key: process.env.GEMINI_API_KEY,
+  gemini_model: process.env.GEMINI_MODEL,
 };

@@ -27,7 +27,6 @@ import {
 import type { requestUser } from "../../middleware/checkAuth";
 import googleClient from "../../lib/googleAuth";
 import type { TokenPayload } from "google-auth-library";
-import redis from "../../lib/redis";
 
 const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const {
@@ -58,7 +57,8 @@ const registerMerchant = async (payload: IMerchantRegisterPayload) => {
   const expiresInSeconds = 5 * 60;
   const otpKey = `merchant-register-otp:${email}`;
   const otpValue = crypto.randomInt(100000, 1000000).toString();
-
+  
+  
   await redisClient.set(otpKey, otpValue, {
     expiration: {
       type: "EX",
@@ -196,7 +196,9 @@ const resendVerificationOtp = async (
 ) => {
   const { email } = payload;
   // Check pending registration
-  const registrationData = await redisClient.get(`merchant-register-data:${email}`);
+  const registrationData = await redisClient.get(
+    `merchant-register-data:${email}`,
+  );
   if (!registrationData) {
     throw new AppError(
       httpstatus.NOT_FOUND,
@@ -390,6 +392,8 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
   const expiresInSecend = 5 * 60;
   const otp = crypto.randomInt(100000, 1000000).toString();
   const key = `forgot-password-otp:${isForgotUserExist.email}`;
+  console.log(otp);
+  
 
   await redisClient.set(key, otp, {
     expiration: {
@@ -557,33 +561,33 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
           googleId: googleIdTokenPayload.sub,
         },
       });
-    }
-  } else {
-    user = await prisma.user.create({
-      data: {
+    } else {
+      user = await prisma.user.create({
+        data: {
+          name: googleIdTokenPayload.name,
+          email: googleIdTokenPayload.email,
+          role: UserRole.MERCHANT,
+          googleId: googleIdTokenPayload.sub,
+          authProvider: AuthProvider.GOOGLE,
+          emailVerified: true,
+        },
+      });
+      const templatePath = path.join(
+        process.cwd(),
+        "src/app/template/SwiftDrop-WelcomeEmail.ejs",
+      );
+
+      const html = await ejs.renderFile(templatePath, {
         name: googleIdTokenPayload.name,
-        email: googleIdTokenPayload.email,
-        role: UserRole.MERCHANT,
-        googleId: googleIdTokenPayload.sub,
-        authProvider: AuthProvider.GOOGLE,
-        emailVerified: true,
-      },
-    });
-    const templatePath = path.join(
-      process.cwd(),
-      "src/app/template/SwiftDrop-WelcomeEmail.ejs",
-    );
+      });
 
-    const html = await ejs.renderFile(templatePath, {
-      name: googleIdTokenPayload.name,
-    });
-
-    await transporter.sendMail({
-      from: config.sender_email,
-      to: googleIdTokenPayload.email,
-      subject: "Welcome to SwiftDrop",
-      html,
-    });
+      await transporter.sendMail({
+        from: config.sender_email,
+        to: googleIdTokenPayload.email,
+        subject: "Welcome to SwiftDrop",
+        html,
+      });
+    }
   }
   if (!user) {
     throw new AppError(httpstatus.NOT_FOUND, "User Not Found");

@@ -59,14 +59,20 @@ const loginUser = catchAsync(
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: config.node_env === "development" ? false : true,
-      sameSite: config.node_env === "development" ? "lax" : "none",
+      // secure: config.node_env === "development" ? false : true,
+      secure: true,
+      // sameSite: config.node_env === "development" ? "lax" : "none",
+      sameSite : "lax",
+      path: "/",
       maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: config.node_env === "development" ? false : true,
-      sameSite: config.node_env === "development" ? "lax" : "none",
+      // secure: config.node_env === "development" ? false : true,
+      secure : true,
+      sameSite: "lax",
+      path: "/",
+      // sameSite: config.node_env === "development" ? "lax" : "none",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
@@ -200,6 +206,18 @@ const googleLogin = catchAsync(
     });
   },
 );
+const logout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.OK,
+      message: "User Logged Out Successfull",
+      data: null,
+    });
+  },
+);
 
 export const AuthController = {
   registerMerchant,
@@ -211,4 +229,5 @@ export const AuthController = {
   resetPassword,
   googleLogin,
   resendVerificationOtp,
+  logout,
 };
